@@ -63,3 +63,7 @@ appsettings.*.json
 .vs/
 .vscode/
 *.user
+
+# JetBrains Rider
+.idea/
+*.sln.DotSettings.user
