@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using tool_system.Data;
-using tool_system.Models;
+using ToolingSystem.API.Models;
 
 namespace ToolingSystem.API.Controllers;
 

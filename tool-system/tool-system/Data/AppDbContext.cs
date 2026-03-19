@@ -1,5 +1,6 @@
+using ToolingSystem.API.Models;
+
 namespace tool_system.Data;
-using tool_system.Models;
 using Microsoft.EntityFrameworkCore;
 
 public class AppDbContext : DbContext
