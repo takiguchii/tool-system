@@ -26,6 +26,18 @@ public class MoldeController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CriarMolde(Molde molde)
     {
+        if (molde.EmpresaId.HasValue)
+        {
+            var empresaExiste = await _context.Empresas.AnyAsync(e => e.Id == molde.EmpresaId);
+            if (!empresaExiste) return BadRequest("A empresa informada não existe.");
+        }
+
+        if (molde.CategoriaId.HasValue)
+        {
+            var categoriaExiste = await _context.Categorias.AnyAsync(c => c.Id == molde.CategoriaId);
+            if (!categoriaExiste) return BadRequest("A categoria informada não existe.");
+        }
+
         _context.Moldes.Add(molde);
         await _context.SaveChangesAsync();
         return Ok(molde);
