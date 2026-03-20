@@ -1,20 +1,29 @@
 version: '3.8'
 
 services:
-  db-fundicao:
+  db:
     image: mysql:8.0
-    container_name: mysql-fundicao-api
-    restart: always
+    container_name: mysql-fundicao
     environment:
       MYSQL_ROOT_PASSWORD: root
     ports:
-      # Expõe na porta 3307 do seu notebook, apontando para a 3306 do contêiner
       - "3307:3306"
     volumes:
-      # Salva os dados para não perder se o contêiner reiniciar
-      - mysql_fundicao_data:/var/lib/mysql
-      # Executa o seu script sql automaticamente
-      - ./banco-de-dados/Database.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./banco-de-dados:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+
+  api:
+    build:
+      context: ./tool-system/tool-system  
+      dockerfile: Dockerfile
+    container_name: api-fundicao
+    ports:
+      - "5183:8080" 
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=fundicao;Uid=root;Pwd=root;
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db 
 
 volumes:
-  mysql_fundicao_data:
+  db_data:
