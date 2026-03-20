@@ -12,7 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Categoria> Categorias { get; set; }
     public DbSet<Macho> Machos { get; set; }
     public DbSet<Molde> Moldes { get; set; }
-    
+        
     public DbSet<MoldeUsaMacho> MoldeUsaMachos { get; set; }
     public DbSet<Estado> Estados { get; set; }
 }
