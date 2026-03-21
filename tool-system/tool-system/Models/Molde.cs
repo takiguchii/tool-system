@@ -22,4 +22,7 @@ public class Molde
 
     [Column("categoria_id")]
     public int? CategoriaId { get; set; }
+    public string? Imagem1 { get; set; }
+    public string? Imagem2 { get; set; }
+    public string? Imagem3 { get; set; }
 }

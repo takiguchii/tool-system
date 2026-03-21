@@ -67,3 +67,5 @@ appsettings.*.json
 # JetBrains Rider
 .idea/
 *.sln.DotSettings.user
+
+**/wwwroot/imagens/
