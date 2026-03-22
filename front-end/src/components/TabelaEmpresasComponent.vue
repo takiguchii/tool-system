@@ -1,64 +1,68 @@
 <template>
-  <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 md:p-8 shadow-2xl text-white relative">
-    <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-      <h2 class="text-2xl font-bold text-green-500">Empresas</h2>
-      <button @click="abrirModalNovo()" class="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
+  <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-8 shadow-2xl text-white relative">
+    
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-orange-500">Empresas Cadastradas</h2>
+      <button @click="mostrarModalNovo = true" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 px-4 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)]">
         + Nova Empresa
       </button>
     </div>
 
-    <div v-if="carregando" class="text-center text-zinc-400 py-4">Carregando...</div>
-    <div v-if="erro" class="text-center text-red-500 py-4">{{ erro }}</div>
+    <div v-if="carregando" class="text-zinc-500 animate-pulse font-medium p-4 text-center border border-dashed border-zinc-800 rounded-lg">
+      Buscando empresas no cofre da API...
+    </div>
 
-    <div v-if="!carregando && !erro">
-      <!-- Tabela para Desktop -->
-      <div class="hidden md:block overflow-x-auto rounded-lg border border-zinc-800">
-        <table class="w-full text-left">
-          <thead class="bg-zinc-900 text-zinc-400 text-sm uppercase">
-            <tr>
-              <th class="p-4 font-medium">ID</th>
-              <th class="p-4 font-medium">Nome</th>
-              <th class="p-4 font-medium text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-zinc-800">
-            <tr v-for="item in itens" :key="item.id" class="hover:bg-zinc-900/60">
-              <td class="p-4 font-mono text-zinc-500">{{ item.id }}</td>
-              <td class="p-4 text-zinc-200">{{ item.nome }}</td>
-              <td class="p-4 flex justify-end gap-4">
-                <button @click="abrirModalEdicao(item)" class="text-sm font-semibold text-blue-500">Editar</button>
-                <button @click="deletarItem(item.id)" class="text-sm font-semibold text-red-500">Excluir</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <!-- Cards para Mobile -->
-      <div class="block md:hidden space-y-4">
-        <div v-for="item in itens" :key="item.id + '-mobile'" class="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
-          <p class="text-zinc-200 text-lg">{{ item.nome }}</p>
-          <div class="mt-4 pt-4 border-t border-zinc-800 flex justify-end gap-4">
-            <button @click="abrirModalEdicao(item)" class="text-sm font-semibold text-blue-500">Editar</button>
-            <button @click="deletarItem(item.id)" class="text-sm font-semibold text-red-500">Excluir</button>
-          </div>
-        </div>
+    <div v-else-if="erro" class="text-red-500 font-bold p-4 bg-red-900/20 rounded-lg border border-red-900/50">
+      {{ erro }}
+    </div>
+
+    <div v-else class="overflow-x-auto rounded-lg border border-zinc-800 shadow-lg">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-zinc-900 text-zinc-400 border-b border-zinc-800 text-sm uppercase tracking-wider">
+            <th class="p-4 font-medium w-24">ID</th>
+            <th class="p-4 font-medium">Nome da Empresa</th>
+            <th class="p-4 font-medium">Descrição</th>
+            <th class="p-4 font-medium text-center w-40">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+          
+          <tr v-for="empresa in empresas" :key="empresa.id" class="hover:bg-zinc-900/60 transition-colors duration-200">
+            <td class="p-4 font-mono text-orange-400 font-bold">{{ empresa.id }}</td>
+            <td class="p-4 font-medium text-zinc-200">{{ empresa.nome }}</td>
+            <td class="p-4 text-zinc-400 truncate max-w-xs">{{ empresa.descricao || 'Sem descrição' }}</td>
+            
+            <td class="p-4 text-center flex justify-center gap-4">
+              <button @click="abrirEdicao(empresa)" class="text-sm font-semibold text-zinc-500 hover:text-blue-500 transition-colors">
+                Editar
+              </button>
+              <button @click="deletarEmpresa(empresa.id)" class="text-sm font-semibold text-zinc-500 hover:text-red-500 transition-colors">
+                Excluir
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+      
+      <div v-if="empresas.length === 0" class="p-8 text-center text-zinc-500 font-medium">
+        Nenhuma empresa cadastrada no momento.
       </div>
     </div>
 
-    <!-- Modal de Criar/Editar -->
-    <div v-if="mostrarModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-8 w-full max-w-md shadow-2xl">
-        <h2 class="text-2xl font-bold text-white mb-6">{{ itemSelecionado.id ? 'Editar' : 'Nova' }} Empresa</h2>
-        <form @submit.prevent="salvarItem">
-          <label class="block text-zinc-400 font-medium mb-1 text-sm">Nome</label>
-          <input v-model="itemSelecionado.nome" type="text" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2" required>
-          <div class="flex justify-end gap-3 mt-6">
-            <button type="button" @click="fecharModal" class="px-4 py-2 rounded-lg text-zinc-400 hover:bg-zinc-800">Cancelar</button>
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-2 rounded-lg">Salvar</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <ModalNovaEmpresaComponent 
+      v-if="mostrarModalNovo" 
+      @fechar="mostrarModalNovo = false" 
+      @empresaCadastrada="aoAtualizar" 
+    />
+
+    <ModalEditarEmpresaComponent 
+      v-if="mostrarModalEditar" 
+      :empresa="empresaSelecionada"
+      @fechar="mostrarModalEditar = false" 
+      @empresaEditada="aoAtualizar" 
+    />
 
   </div>
 </template>
@@ -67,67 +71,58 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const itens = ref([])
+import ModalNovaEmpresaComponent from './ModalNovaEmpresaComponent.vue'
+import ModalEditarEmpresaComponent from './ModalEditarEmpresaComponent.vue'
+
+const empresas = ref([])
 const carregando = ref(true)
 const erro = ref('')
-const mostrarModal = ref(false)
-const itemSelecionado = ref({})
 
-const API_URL = '/api/Empresa'
+const mostrarModalNovo = ref(false)
+const mostrarModalEditar = ref(false)
+const empresaSelecionada = ref(null)
 
-const buscarItens = async () => {
-  carregando.value = true
+const buscarEmpresas = async () => {
   try {
     const token = localStorage.getItem('token')
-    const { data } = await axios.get(API_URL, { headers: { Authorization: `Bearer ${token}` } })
-    itens.value = data
+    const resposta = await axios.get('/api/Empresa', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    empresas.value = resposta.data
   } catch (e) {
-    erro.value = 'Falha ao buscar empresas.'
+    erro.value = 'Falha ao buscar as empresas. Verifique sua conexão.'
   } finally {
     carregando.value = false
   }
 }
 
-const abrirModalNovo = () => {
-  itemSelecionado.value = {}
-  mostrarModal.value = true
-}
-
-const abrirModalEdicao = (item) => {
-  itemSelecionado.value = { ...item }
-  mostrarModal.value = true
-}
-
-const fecharModal = () => {
-  mostrarModal.value = false
-}
-
-const salvarItem = async () => {
+const deletarEmpresa = async (id) => {
+  const confirmacao = window.confirm("Tem certeza que deseja apagar esta empresa?")
+  if (!confirmacao) return
   try {
     const token = localStorage.getItem('token')
-    const headers = { Authorization: `Bearer ${token}` }
-    if (itemSelecionado.value.id) {
-      await axios.put(`${API_URL}/${itemSelecionado.value.id}`, itemSelecionado.value, { headers })
-    } else {
-      await axios.post(API_URL, itemSelecionado.value, { headers })
-    }
-    fecharModal()
-    buscarItens()
+    await axios.delete(`/api/Empresa/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    buscarEmpresas()
   } catch (e) {
-    alert('Erro ao salvar empresa.')
+    alert("Erro ao excluir. Verifique se existem ferramentas usando esta empresa.")
   }
 }
 
-const deletarItem = async (id) => {
-  if (!confirm('Tem certeza que deseja excluir esta empresa?')) return
-  try {
-    const token = localStorage.getItem('token')
-    await axios.delete(`${API_URL}/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-    buscarItens()
-  } catch (e) {
-    alert('Erro ao excluir empresa.')
-  }
+const aoAtualizar = () => {
+  mostrarModalNovo.value = false
+  mostrarModalEditar.value = false
+  carregando.value = true
+  buscarEmpresas()
 }
 
-onMounted(buscarItens)
+const abrirEdicao = (empresa) => {
+  empresaSelecionada.value = empresa
+  mostrarModalEditar.value = true
+}
+
+onMounted(() => {
+  buscarEmpresas()
+})
 </script>
