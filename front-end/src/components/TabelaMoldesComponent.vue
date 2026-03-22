@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-8 shadow-2xl text-white">
+  <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-8 shadow-2xl text-white relative">
     
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-orange-500">Acervo de Moldes</h2>
-      <button class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 px-4 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+      <button @click="mostrarModal = true" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 px-4 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)]">
         + Novo Molde
       </button>
     </div>
@@ -39,11 +39,16 @@
                 {{ molde.status || 'Disponível' }}
               </span>
             </td>
-            
-            <td class="p-4 text-center">
-              <button class="text-sm font-semibold text-zinc-500 hover:text-orange-500 transition-colors">
-                Ver Detalhes
-              </button>
+            <td class="p-4 text-center flex justify-center gap-4">
+                <button @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-500 hover:text-orange-500 transition-colors">
+                    Ver Detalhes
+                </button>
+                <button @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-500 hover:text-blue-500 transition-colors">
+                    Editar
+                </button>
+                <button @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-500 hover:text-red-500 transition-colors">
+                    Excluir
+                </button>
             </td>
           </tr>
 
@@ -55,33 +60,97 @@
       </div>
     </div>
 
+    <ModalNovoMoldeComponent 
+      v-if="mostrarModal" 
+      @fechar="mostrarModal = false" 
+      @moldeCadastrado="aoCadastrarComSucesso"
+    />
+
+    <ModalEditarMoldeComponent 
+      v-if="mostrarModalEditar" 
+      :molde="moldeSelecionado"
+      @fechar="mostrarModalEditar = false" 
+      @moldeEditado="aoEditarComSucesso"
+    />
+
+    <ModalDetalhesMoldeComponent 
+      v-if="mostrarModalDetalhes" 
+      :molde="moldeSelecionado"
+      @fechar="mostrarModalDetalhes = false" 
+    />
+    
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import ModalNovoMoldeComponent from './ModalNovoMoldeComponent.vue'
+import ModalEditarMoldeComponent from './ModalEditarMoldeComponent.vue' 
+import ModalDetalhesMoldeComponent from './ModalDetalhesMoldeComponent.vue'
 
 const moldes = ref([])
 const carregando = ref(true)
 const erro = ref('')
 
+const mostrarModal = ref(false)
+
 const buscarMoldes = async () => {
   try {
     const token = localStorage.getItem('token')
-    
     const resposta = await axios.get('/api/Molde', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
-
     moldes.value = resposta.data
   } catch (e) {
     erro.value = 'Falha ao buscar os moldes. Verifique sua conexão.'
   } finally {
     carregando.value = false
   }
+}
+
+const aoCadastrarComSucesso = () => {
+  mostrarModal.value = false
+  carregando.value = true
+  buscarMoldes()
+}
+const deletarMolde = async (id) => {
+  const confirmacao = window.confirm("Tem certeza que deseja apagar esta ferramenta? Esta ação não tem volta.")
+  if (!confirmacao) return
+
+  try {
+    const token = localStorage.getItem('token')
+    
+    await axios.delete(`/api/Molde/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    buscarMoldes()
+    
+  } catch (e) {
+    alert("Erro ao tentar excluir. Verifique se você tem permissões de Admin.")
+  }
+}
+
+const mostrarModalEditar = ref(false)
+const moldeSelecionado = ref(null)
+
+const abrirEdicao = (molde) => {
+  moldeSelecionado.value = molde
+  mostrarModalEditar.value = true
+}
+
+const aoEditarComSucesso = () => {
+  mostrarModalEditar.value = false
+  carregando.value = true
+  buscarMoldes()
+}
+const mostrarModalDetalhes = ref(false)
+
+const abrirDetalhes = (molde) => {
+  moldeSelecionado.value = molde
+  mostrarModalDetalhes.value = true
 }
 
 onMounted(() => {
