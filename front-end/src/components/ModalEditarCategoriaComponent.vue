@@ -5,13 +5,8 @@
       
       <form @submit.prevent="salvarEdicao" class="flex flex-col gap-4">
         <div>
-          <label class="block text-zinc-400 font-medium mb-1 text-sm">Nome da Categoria</label>
-          <input type="text" v-model="categoriaEditada.nome" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
-        </div>
-
-        <div>
-          <label class="block text-zinc-400 font-medium mb-1 text-sm">Descrição</label>
-          <textarea v-model="categoriaEditada.descricao" rows="3" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></textarea>
+          <label class="block text-zinc-400 font-medium mb-1 text-sm">Setor da Categoria</label>
+          <input type="text" v-model="categoriaEditada.setor" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
         </div>
 
         <p v-if="erro" class="text-red-500 text-sm mt-2">{{ erro }}</p>
@@ -39,7 +34,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['fechar', 'categoriaEditada'])
 
-const categoriaEditada = ref({ id: '', nome: '', descricao: '' })
+// Corrigido para editar apenas o Setor
+const categoriaEditada = ref({ id: '', setor: '' })
 const carregando = ref(false)
 const erro = ref('')
 

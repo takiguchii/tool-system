@@ -21,8 +21,7 @@
         <thead>
           <tr class="bg-zinc-900 text-zinc-400 border-b border-zinc-800 text-sm uppercase tracking-wider">
             <th class="p-4 font-medium w-24">ID</th>
-            <th class="p-4 font-medium">Nome da Categoria</th>
-            <th class="p-4 font-medium">Descrição</th>
+            <th class="p-4 font-medium">Setor da Categoria</th>
             <th class="p-4 font-medium text-center w-40">Ações</th>
           </tr>
         </thead>
@@ -30,8 +29,7 @@
           
           <tr v-for="categoria in categorias" :key="categoria.id" class="hover:bg-zinc-900/60 transition-colors duration-200">
             <td class="p-4 font-mono text-orange-400 font-bold">{{ categoria.id }}</td>
-            <td class="p-4 font-medium text-zinc-200">{{ categoria.nome }}</td>
-            <td class="p-4 text-zinc-400 truncate max-w-xs">{{ categoria.descricao || 'Sem descrição' }}</td>
+            <td class="p-4 font-medium text-zinc-200">{{ categoria.setor }}</td>
             
             <td class="p-4 text-center flex justify-center gap-4">
               <button @click="abrirEdicao(categoria)" class="text-sm font-semibold text-zinc-500 hover:text-blue-500 transition-colors">

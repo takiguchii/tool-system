@@ -10,8 +10,8 @@
         </div>
 
         <div>
-          <label class="block text-zinc-400 font-medium mb-1 text-sm">Descrição</label>
-          <textarea v-model="novaEmpresa.descricao" rows="3" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" placeholder="Ex: Fornecedor de matéria-prima..."></textarea>
+          <label class="block text-zinc-400 font-medium mb-1 text-sm">Cidade</label>
+          <input type="text" v-model="novaEmpresa.cidade" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" placeholder="Ex: São Paulo">
         </div>
 
         <p v-if="erro" class="text-red-500 text-sm mt-2">{{ erro }}</p>
@@ -38,7 +38,7 @@ const emit = defineEmits(['fechar', 'empresaCadastrada'])
 
 const novaEmpresa = ref({
   nome: '',
-  descricao: ''
+  cidade: ''
 })
 const carregando = ref(false)
 const erro = ref('')

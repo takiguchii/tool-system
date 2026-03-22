@@ -22,7 +22,7 @@
           <tr class="bg-zinc-900 text-zinc-400 border-b border-zinc-800 text-sm uppercase tracking-wider">
             <th class="p-4 font-medium w-24">ID</th>
             <th class="p-4 font-medium">Nome da Empresa</th>
-            <th class="p-4 font-medium">Descrição</th>
+            <th class="p-4 font-medium">Cidade</th>
             <th class="p-4 font-medium text-center w-40">Ações</th>
           </tr>
         </thead>
@@ -31,7 +31,7 @@
           <tr v-for="empresa in empresas" :key="empresa.id" class="hover:bg-zinc-900/60 transition-colors duration-200">
             <td class="p-4 font-mono text-orange-400 font-bold">{{ empresa.id }}</td>
             <td class="p-4 font-medium text-zinc-200">{{ empresa.nome }}</td>
-            <td class="p-4 text-zinc-400 truncate max-w-xs">{{ empresa.descricao || 'Sem descrição' }}</td>
+            <td class="p-4 text-zinc-400 truncate max-w-xs">{{ empresa.cidade || 'Não informada' }}</td>
             
             <td class="p-4 text-center flex justify-center gap-4">
               <button @click="abrirEdicao(empresa)" class="text-sm font-semibold text-zinc-500 hover:text-blue-500 transition-colors">
