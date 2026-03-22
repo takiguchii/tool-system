@@ -10,8 +10,8 @@
 
       <form @submit.prevent="fazerLogin" class="flex flex-col gap-5">
         <div>
-          <label class="block text-zinc-400 font-medium mb-1 text-sm">E-mail</label>
-          <input type="email" v-model="email" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" required>
+          <label class="block text-zinc-400 font-medium mb-1 text-sm">Usuário</label>
+          <input type="text" v-model="username" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" required>
         </div>
 
         <div>
@@ -34,29 +34,32 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
-const email = ref('')
+const username = ref('')
 const senha = ref('')
 const erro = ref('')
 const carregando = ref(false)
+
+const router = useRouter()
 
 const fazerLogin = async () => {
   erro.value = ''
   carregando.value = true
 
   try {
-    const resposta = await axios.post('/api/Auth/login', {
-        email: email.value,
+    const resposta = await axios.post('/api/auth/login', {
+        username: username.value,
         senha: senha.value
     })
     
 
     localStorage.setItem('token', resposta.data.token)
     
-    alert("Crachá JWT recebido com sucesso! Acesso Liberado.")
+    router.push('/dashboard')
 
   } catch (e) {
-    erro.value = 'E-mail ou senha incorretos.'
+    erro.value = 'usarname ou senha incorretos.'
   } finally {
     carregando.value = false
   }

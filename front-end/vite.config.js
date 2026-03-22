@@ -8,22 +8,17 @@ export default defineConfig({
     vue(),
     tailwindcss(), 
   ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  },
   server: {
     host: true,
-    port: 5173
-  },
-  proxy: {
+    port: 5173,
+    proxy: {
       '/api': {
-        target: 'http://api:8080', 
+        target: 'http://api-fundicao:8080', 
         changeOrigin: true,
         secure: false
       }
-    },
+    }
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
