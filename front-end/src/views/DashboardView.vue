@@ -1,30 +1,28 @@
 <template>
-  <div class="relative flex min-h-screen bg-zinc-900 font-sans">
+  <div class="flex h-screen bg-zinc-900 font-sans overflow-hidden">
     
-    <SidebarComponent :is-mobile-open="isSidebarOpen" @close="isSidebarOpen = false" />
+    <SidebarComponent :aberto="menuAberto" @fechar="menuAberto = false" />
     
-    <div class="flex-1 flex flex-col">
-      <header class="p-4 md:p-10 flex items-center justify-between md:justify-end">
-        <!-- Hamburger button, only visible on mobile -->
-        <button @click="isSidebarOpen = true" class="md:hidden p-2 rounded-lg bg-zinc-800 text-white">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+    <main class="flex-1 flex flex-col min-w-0 h-full">
+      
+      <header class="bg-zinc-950 border-b border-zinc-800 p-4 flex items-center shrink-0 shadow-sm z-10">
+        <button @click="menuAberto = !menuAberto" class="text-zinc-400 hover:text-orange-500 p-2 rounded-lg hover:bg-zinc-900 transition-colors mr-4 group active:scale-95">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
         </button>
-        <!-- A placeholder or other header content for desktop can go here -->
-        <div class="hidden md:block">
-          <!-- Ex: User menu, notifications, etc. -->
-        </div>
+        <h1 class="text-xl md:text-2xl font-extrabold text-white truncate">Painel de Ferramentas</h1>
       </header>
       
-      <main class="flex-1 p-4 md:px-10">
-        <div class="mb-10">
-          <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2">Painel de Ferramentas</h1>
+      <div class="p-4 md:p-10 overflow-y-auto flex-1">
+        <header class="mb-8 hidden md:block">
           <p class="text-zinc-400">Gerencie o acervo físico da fundição com rapidez e segurança.</p>
-        </div>
+        </header>
         
         <TabelaMoldesComponent />
-        
-      </main>
-    </div>
+      </div>
+      
+    </main>
   </div>
 </template>
 
@@ -33,5 +31,5 @@ import { ref } from 'vue'
 import SidebarComponent from '../components/SidebarComponent.vue'
 import TabelaMoldesComponent from '../components/TabelaMoldesComponent.vue'
 
-const isSidebarOpen = ref(false)
+const menuAberto = ref(window.innerWidth > 768)
 </script>
