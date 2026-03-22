@@ -45,10 +45,11 @@ const fazerLogin = async () => {
   carregando.value = true
 
   try {
-    const resposta = await axios.post('http://localhost:5183/api/Auth/login', {
-      email: email.value,
-      senha: senha.value
+    const resposta = await axios.post('/api/Auth/login', {
+        email: email.value,
+        senha: senha.value
     })
+    
 
     localStorage.setItem('token', resposta.data.token)
     

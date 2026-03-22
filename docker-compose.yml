@@ -24,6 +24,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - db 
-
+  frontend:
+    build:
+      context: ./front-end
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./front-end:/app
+      - /app/node_modules
+    depends_on:
+      - api
 volumes:
   db_data:
