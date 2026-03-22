@@ -12,10 +12,12 @@ namespace ToolingSystem.API.Controllers;
 public class MoldeController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IWebHostEnvironment _ambiente;
 
-    public MoldeController(AppDbContext context)
+    public MoldeController(AppDbContext context, IWebHostEnvironment ambiente)
     {
         _context = context;
+        _ambiente = ambiente;
     }
 
     [HttpGet]
@@ -49,8 +51,15 @@ public class MoldeController : ControllerBase
         if (moldeAtualizado.CategoriaId.HasValue && !await _context.Categorias.AnyAsync(c => c.Id == moldeAtualizado.CategoriaId))
             return BadRequest("A categoria informada não existe.");
 
+        var moldeAtual = await _context.Moldes.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+        if (moldeAtual == null) return NotFound("O molde que você está tentando editar não foi encontrado.");
+
         _context.Entry(moldeAtualizado).State = EntityState.Modified;
         await _context.SaveChangesAsync();
+        
+        DeletarImagemSeNecessario(moldeAtual.Imagem1, moldeAtualizado.Imagem1);
+        DeletarImagemSeNecessario(moldeAtual.Imagem2, moldeAtualizado.Imagem2);
+        DeletarImagemSeNecessario(moldeAtual.Imagem3, moldeAtualizado.Imagem3);
 
         return Ok(moldeAtualizado);
     }
@@ -63,7 +72,32 @@ public class MoldeController : ControllerBase
 
         _context.Moldes.Remove(molde);
         await _context.SaveChangesAsync();
+        
+        DeletarImagemSeNecessario(molde.Imagem1, null);
+        DeletarImagemSeNecessario(molde.Imagem2, null);
+        DeletarImagemSeNecessario(molde.Imagem3, null);
 
         return Ok("Molde deletado com sucesso.");
+    }
+    
+    private void DeletarImagemSeNecessario(string? nomeImagemAntiga, string? nomeImagemNova)
+    {
+        if (string.IsNullOrEmpty(nomeImagemAntiga)) return;
+        if (nomeImagemAntiga == nomeImagemNova) return;
+
+        try
+        {
+            var pastaRaiz = _ambiente.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var caminhoCompleto = Path.Combine(pastaRaiz, "imagens", "moldes", nomeImagemAntiga);
+            
+            if (System.IO.File.Exists(caminhoCompleto))
+            {
+                System.IO.File.Delete(caminhoCompleto);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Não foi possível apagar a imagem antiga '{nomeImagemAntiga}'. Erro: {ex.Message}");
+        }
     }
 }

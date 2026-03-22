@@ -18,7 +18,9 @@ services:
       dockerfile: Dockerfile
     container_name: api-fundicao
     ports:
-      - "5183:8080" 
+      - "5183:8080"
+    volumes:
+      - ./tool-system/tool-system/wwwroot:/app/wwwroot
     environment:
       - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=fundicao;Uid=root;Pwd=root;
       - ASPNETCORE_ENVIRONMENT=Development

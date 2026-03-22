@@ -53,6 +53,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 var app = builder.Build();
+var pastaImagens = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens");
+Directory.CreateDirectory(Path.Combine(pastaImagens, "moldes"));
+Directory.CreateDirectory(Path.Combine(pastaImagens, "machos"));
 
 app.UseCors(options => options
     .AllowAnyOrigin()
