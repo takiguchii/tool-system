@@ -25,10 +25,15 @@ public class MachoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CriarMacho(Macho macho)
+    public async Task<IActionResult> CriarMacho([FromQuery] int moldeId, [FromBody] Macho macho)
     {
         _context.Machos.Add(macho);
         await _context.SaveChangesAsync();
+
+        var vinculo = new MoldeUsaMacho { MoldeId = moldeId, MachoId = macho.Id };
+        _context.Add(vinculo);
+        await _context.SaveChangesAsync();
+
         return Ok(macho);
     }
 
