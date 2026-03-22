@@ -17,7 +17,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       }
-    }
+    },
+    '/imagens': {
+        target: 'http://api-fundicao:8080', 
+        changeOrigin: true,
+        secure: false
+      }
   },
   resolve: {
     alias: {

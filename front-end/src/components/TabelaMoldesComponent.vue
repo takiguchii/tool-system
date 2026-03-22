@@ -78,6 +78,13 @@
       :molde="moldeSelecionado"
       @fechar="mostrarModalDetalhes = false" 
     />
+
+    <ModalDetalhesMoldeComponent 
+      v-if="mostrarModalDetalhes" 
+      :molde="moldeSelecionado"
+      @fechar="mostrarModalDetalhes = false" 
+      @fotoAtualizada="aoEditarComSucesso"
+    />
     
 
   </div>
