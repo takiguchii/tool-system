@@ -25,6 +25,20 @@ public class MoldeController : ControllerBase
     {
         return Ok(await _context.Moldes.ToListAsync());
     }
+    
+    [HttpGet("{id}/machos")]
+    public async Task<IActionResult> ObterMachosDoMolde(int id)
+    {
+        var machos = await _context.Set<MoldeUsaMacho>()
+            .Where(v => v.MoldeId == id)
+            .Join(_context.Machos,
+                  v => v.MachoId,
+                  m => m.Id,
+                  (v, m) => m)
+            .ToListAsync();
+
+        return Ok(machos);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CriarMolde(Molde molde)
