@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-8 shadow-2xl text-white relative flex flex-col h-full">
+  <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 sm:p-8 shadow-2xl text-white relative flex flex-col h-full">
     
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
-      <h2 class="text-2xl font-bold text-orange-500">Moldes Cadastrados</h2>
+      <h2 class="text-xl sm:text-2xl font-bold text-orange-500">Moldes Cadastrados</h2>
       <button @click="mostrarModalNovo = true" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 px-4 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)] w-full sm:w-auto">
         + Novo Molde
       </button>
@@ -14,8 +14,8 @@
         <input 
           type="text" 
           v-model="termoPesquisa" 
-          placeholder="Pesquise por peça, código, empresa ou cidade..." 
-          class="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors shadow-inner placeholder-zinc-600"
+          placeholder="Pesquise por peça, código ou empresa..." 
+          class="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors shadow-inner placeholder-zinc-600 text-sm sm:text-base"
         >
       </div>
     </div>
@@ -28,9 +28,10 @@
       {{ erro }}
     </div>
 
-    <div v-else class="overflow-y-auto rounded-lg border border-zinc-800 shadow-lg flex-1 custom-scrollbar">
-      <table class="w-full text-left border-collapse">
-        <thead class="sticky top-0 bg-zinc-900 z-10 shadow-md">
+    <div v-else class="overflow-y-auto sm:rounded-lg sm:border sm:border-zinc-800 sm:shadow-lg flex-1 custom-scrollbar">
+      
+      <table class="w-full text-left border-collapse block md:table">
+        <thead class="hidden md:table-header-group sticky top-0 bg-zinc-900 z-10 shadow-md">
           <tr class="text-zinc-400 border-b border-zinc-800 text-sm uppercase tracking-wider">
             <th class="p-4 font-medium w-20">ID</th>
             <th class="p-4 font-medium">Código</th>
@@ -40,30 +41,52 @@
             <th class="p-4 font-medium text-center w-64">Ações</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-zinc-800">
+        
+        <tbody class="block md:table-row-group divide-y divide-transparent md:divide-zinc-800">
           
-          <tr v-for="molde in moldesFiltrados" :key="molde.id" class="hover:bg-zinc-900/60 transition-colors duration-200">
-            <td class="p-4 font-mono text-orange-400 font-bold">{{ molde.id }}</td>
-            <td class="p-4 font-medium text-white">{{ molde.codigo }}</td>
-            <td class="p-4 font-medium text-zinc-300 capitalize">{{ molde.nome }}</td>
-            <td class="p-4 text-zinc-400 text-sm">{{ getNomeEmpresa(molde.empresaId) }}</td>
-            <td class="p-4">
-              <span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-bold uppercase">
-                {{ molde.status || 'Disponível' }}
+          <tr v-for="molde in moldesFiltrados" :key="molde.id" class="block md:table-row hover:bg-zinc-900/60 transition-colors duration-200 bg-zinc-900 md:bg-transparent rounded-xl mb-4 md:mb-0 border border-zinc-800 md:border-none p-4 md:p-0 shadow-sm md:shadow-none">
+            
+            <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
+              <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">ID</span>
+              <span class="font-mono text-orange-400 font-bold">{{ molde.id }}</span>
+            </td>
+
+            <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
+              <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">Código</span>
+              <span class="font-medium text-white">{{ molde.codigo }}</span>
+            </td>
+
+            <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
+              <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">Nome</span>
+              <span class="font-medium text-zinc-300 capitalize">{{ molde.nome }}</span>
+            </td>
+
+            <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
+              <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">Empresa</span>
+              <span class="text-zinc-400 text-sm truncate max-w-[150px] md:max-w-none text-right md:text-left">{{ getNomeEmpresa(molde.empresaId) }}</span>
+            </td>
+
+            <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
+              <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">Status</span>
+              <span :class="molde.status === 'Desativado' ? 'text-red-400 bg-red-500/10 border-red-500/20' : 'text-green-400 bg-green-500/10 border-green-500/20'" class="border px-2 py-1 rounded text-[10px] sm:text-xs font-bold uppercase">
+                {{ molde.status || 'Ativo' }}
               </span>
             </td>
             
-            <td class="p-4 text-center flex justify-center gap-3">
-              <button @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-500 hover:text-orange-500 transition-colors">
-                Ver Detalhes
-              </button>
-              <button @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-500 hover:text-blue-500 transition-colors">
-                Editar
-              </button>
-              <button @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-500 hover:text-red-500 transition-colors">
-                Excluir
-              </button>
+            <td class="block md:table-cell py-4 md:p-4 mt-2 md:mt-0">
+              <div class="flex justify-center items-center gap-4">
+                <button @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-400 hover:text-orange-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
+                  Detalhes
+                </button>
+                <button @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-400 hover:text-blue-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
+                  Editar
+                </button>
+                <button @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-400 hover:text-red-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
+                  Excluir
+                </button>
+              </div>
             </td>
+            
           </tr>
 
         </tbody>
@@ -106,13 +129,10 @@ const getNomeEmpresa = (id) => {
 
 const moldesFiltrados = computed(() => {
   if (!termoPesquisa.value) return moldes.value
-  
   const termo = termoPesquisa.value.toLowerCase()
-  
   return moldes.value.filter(molde => {
     const nomeMolde = molde.nome ? molde.nome.toLowerCase() : ''
     const codigoMolde = molde.codigo ? molde.codigo.toLowerCase() : ''
-    
     let nomeEmpresa = ''
     let cidadeEmpresa = ''
     
@@ -123,11 +143,7 @@ const moldesFiltrados = computed(() => {
         cidadeEmpresa = empresaVinculada.cidade ? empresaVinculada.cidade.toLowerCase() : ''
       }
     }
-    
-    return nomeMolde.includes(termo) || 
-           codigoMolde.includes(termo) || 
-           nomeEmpresa.includes(termo) || 
-           cidadeEmpresa.includes(termo)
+    return nomeMolde.includes(termo) || codigoMolde.includes(termo) || nomeEmpresa.includes(termo) || cidadeEmpresa.includes(termo)
   })
 })
 
@@ -140,12 +156,10 @@ const buscarDados = async () => {
   try {
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
-    
     const [respMoldes, respEmpresas] = await Promise.all([
       axios.get('/api/Molde', config),
       axios.get('/api/Empresa', config)
     ])
-    
     moldes.value = respMoldes.data
     empresas.value = respEmpresas.data
   } catch (e) {
@@ -189,7 +203,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; border-radius: 8px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 8px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f97316; }
