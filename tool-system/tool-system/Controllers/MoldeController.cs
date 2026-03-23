@@ -49,6 +49,15 @@ public class MoldeController : ControllerBase
         if (molde.CategoriaId.HasValue && !await _context.Categorias.AnyAsync(c => c.Id == molde.CategoriaId))
             return BadRequest("A categoria informada não existe.");
 
+        if (molde.Status == "Ativo") 
+        {
+            molde.DataEntrada = DateTime.Now;
+        }
+        else if (molde.Status == "Desativado") 
+        {
+            molde.DataSaida = DateTime.Now;
+        }
+
         _context.Moldes.Add(molde);
         await _context.SaveChangesAsync();
         return Ok(molde);
@@ -66,7 +75,23 @@ public class MoldeController : ControllerBase
             return BadRequest("A categoria informada não existe.");
 
         var moldeAtual = await _context.Moldes.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
-        if (moldeAtual == null) return NotFound("O molde que você está tentando editar não foi encontrado.");
+        if (moldeAtual == null) return NotFound("Molde não encontrado.");
+
+        if (moldeAtualizado.Status == "Ativo" && moldeAtual.Status != "Ativo") 
+        {
+            moldeAtualizado.DataEntrada = DateTime.Now;
+            moldeAtualizado.DataSaida = null; 
+        } 
+        else if (moldeAtualizado.Status == "Desativado" && moldeAtual.Status != "Desativado") 
+        {
+            moldeAtualizado.DataSaida = DateTime.Now;
+            moldeAtualizado.DataEntrada = moldeAtual.DataEntrada; 
+        }
+        else 
+        {
+            moldeAtualizado.DataEntrada = moldeAtual.DataEntrada;
+            moldeAtualizado.DataSaida = moldeAtual.DataSaida;
+        }
 
         _context.Entry(moldeAtualizado).State = EntityState.Modified;
         await _context.SaveChangesAsync();
@@ -78,7 +103,7 @@ public class MoldeController : ControllerBase
         return Ok(moldeAtualizado);
     }
 
-[HttpDelete("{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeletarMolde(int id)
     {
         try

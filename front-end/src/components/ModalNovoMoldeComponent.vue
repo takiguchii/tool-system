@@ -64,7 +64,7 @@ const emit = defineEmits(['fechar', 'moldeCadastrado'])
 const statusOpcoes = ['Disponível', 'Em Uso', 'Em Manutenção', 'Inativo']
 
 const novoMolde = ref({
-  nome: '', codigo: '', prateleira: '', status: 'Disponível',
+  nome: '', codigo: '', prateleira: '', status: 'Ativo', 
   empresaId: '', categoriaId: ''
 })
 
@@ -72,6 +72,7 @@ const empresas = ref([])
 const categorias = ref([])
 const carregando = ref(false)
 const erro = ref('')
+
 
 onMounted(async () => {
   try {

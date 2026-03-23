@@ -1,6 +1,5 @@
 <template>
   <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in p-4 sm:p-6">
-    
     <div class="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-5xl shadow-2xl relative flex flex-col max-h-[95vh] overflow-hidden">
       
       <div class="p-5 sm:p-6 border-b border-zinc-800 flex justify-between items-start shrink-0 bg-zinc-900 z-10">
@@ -19,10 +18,20 @@
 
       <div class="p-5 sm:p-6 overflow-y-auto flex-1 custom-scrollbar flex flex-col gap-6 bg-zinc-900/50">
         
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-5 grid grid-cols-2 md:grid-cols-4 gap-4 shadow-inner">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-5 grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 shadow-inner">
           <div>
             <p class="text-zinc-500 text-[10px] font-medium uppercase tracking-wider mb-1">Status Atual</p>
-            <p class="text-green-400 font-bold uppercase text-sm sm:text-base">{{ molde.status || 'Disponível' }}</p>
+            <p :class="molde.status === 'Desativado' ? 'text-red-400' : 'text-green-400'" class="font-bold uppercase text-sm sm:text-base">
+              {{ molde.status || 'Ativo' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-zinc-500 text-[10px] font-medium uppercase tracking-wider mb-1">Data de Entrada (Ativo)</p>
+            <p class="text-zinc-200 font-medium text-sm sm:text-base">{{ formatarData(molde.dataEntrada) }}</p>
+          </div>
+          <div>
+            <p class="text-zinc-500 text-[10px] font-medium uppercase tracking-wider mb-1">Data de Saída (Desativado)</p>
+            <p class="text-zinc-200 font-medium text-sm sm:text-base">{{ formatarData(molde.dataSaida) }}</p>
           </div>
           <div>
             <p class="text-zinc-500 text-[10px] font-medium uppercase tracking-wider mb-1">Localização</p>
@@ -93,7 +102,6 @@
               </div>
             </div>
           </div>
-          
           <p v-if="erroUpload" class="text-red-500 text-xs text-center mt-4 p-2 bg-red-900/20 rounded border border-red-900/50">{{ erroUpload }}</p>
         </div>
 
@@ -118,6 +126,12 @@ const buscandoMachos = ref(true)
 const carregandoSlot = ref('') 
 const erroUpload = ref('')
 const inputsFile = reactive({}) 
+
+const formatarData = (dataHora) => {
+  if (!dataHora) return '--/--/----'
+  const data = new Date(dataHora)
+  return data.toLocaleDateString('pt-BR')
+}
 
 onMounted(async () => {
   const token = localStorage.getItem('token')
@@ -209,7 +223,6 @@ const removerFoto = async (slotImagem) => {
 <style scoped>
 .animate-fade-in { animation: fadeIn 0.15s ease-out; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; border-radius: 8px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 8px; }

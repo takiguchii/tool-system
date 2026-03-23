@@ -62,7 +62,7 @@ import axios from 'axios'
 const props = defineProps({ molde: Object })
 const emit = defineEmits(['fechar', 'moldeEditado'])
 
-const statusOpcoes = ['Disponível', 'Em Uso', 'Em Manutenção', 'Inativo']
+const statusOpcoes = ['Ativo', 'Desativado']
 
 const moldeEditado = ref({ ...props.molde, status: props.molde.status || 'Disponível' })
 
