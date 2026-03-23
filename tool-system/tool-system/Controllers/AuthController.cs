@@ -44,20 +44,33 @@ public class AuthController : ControllerBase
         var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Username == requisicao.Username);
         if (usuario == null) return BadRequest("Usuário não encontrado.");
 
-        if (!BCrypt.Net.BCrypt.Verify(requisicao.Senha, usuario.SenhaHash))
+        // Blindagem: Tenta verificar a criptografia. Se for uma senha injetada manual (pura), faz a verificação simples.
+        bool senhaCorreta = false;
+        try 
         {
-            return BadRequest("Senha incorreta.");
+            senhaCorreta = BCrypt.Net.BCrypt.Verify(requisicao.Senha, usuario.SenhaHash);
+        } 
+        catch 
+        {
+            senhaCorreta = (requisicao.Senha == usuario.SenhaHash);
         }
+
+        if (!senhaCorreta) return BadRequest("Senha incorreta.");
 
         var chaveSecreta = _configuration.GetValue<string>("Jwt:Chave");
         var token = TokenService.GerarToken(usuario, chaveSecreta!);
 
-        return Ok(new { Token = token });
+        return Ok(new 
+        { 
+            token = token,
+            perfil = usuario.Perfil ?? "Admin" 
+        });
     }
-}
-public class UsuarioLoginDto
-{
-    public string Username { get; set; } = string.Empty;
-    public string Senha { get; set; } = string.Empty;
-    public string Regra { get; set; } = "Encarregado";
+
+    public class UsuarioLoginDto
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Senha { get; set; } = string.Empty;
+        public string Regra { get; set; } = "Encarregado";
+    }
 }

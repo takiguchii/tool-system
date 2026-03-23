@@ -3,7 +3,7 @@
     
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
       <h2 class="text-xl sm:text-2xl font-bold text-orange-500">Moldes Cadastrados</h2>
-      <button @click="mostrarModalNovo = true" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 px-4 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)] w-full sm:w-auto">
+      <button v-if="ehAdmin" @click="mostrarModalNovo = true" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 px-4 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)] w-full sm:w-auto">
         + Novo Molde
       </button>
     </div>
@@ -75,13 +75,13 @@
             
             <td class="block md:table-cell py-4 md:p-4 mt-2 md:mt-0">
               <div class="flex justify-center items-center gap-4">
-                <button @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-400 hover:text-orange-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
+                <button  @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-400 hover:text-orange-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
                   Detalhes
                 </button>
-                <button @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-400 hover:text-blue-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
+                <button v-if="ehAdmin" @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-400 hover:text-blue-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
                   Editar
                 </button>
-                <button @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-400 hover:text-red-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
+                <button v-if="ehAdmin" @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-400 hover:text-red-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
                   Excluir
                 </button>
               </div>
@@ -196,6 +196,9 @@ const abrirDetalhes = (molde) => {
   moldeSelecionado.value = molde
   mostrarModalDetalhes.value = true
 }
+
+const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
+const ehAdmin = perfilUsuario === 'Admin'
 
 onMounted(() => {
   buscarDados()

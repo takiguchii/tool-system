@@ -40,8 +40,8 @@ const username = ref('')
 const senha = ref('')
 const erro = ref('')
 const carregando = ref(false)
-
 const router = useRouter()
+
 
 const fazerLogin = async () => {
   erro.value = ''
@@ -55,6 +55,7 @@ const fazerLogin = async () => {
     
 
     localStorage.setItem('token', resposta.data.token)
+    localStorage.setItem('perfil', resposta.data.perfil)
     
     router.push('/dashboard')
 

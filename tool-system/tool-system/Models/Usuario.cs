@@ -16,4 +16,7 @@ public class Usuario
 
     [Column("regra")]
     public string Regra { get; set; } = string.Empty; 
+    
+    [Column("perfil")]
+    public string? Perfil { get; set; }
 }

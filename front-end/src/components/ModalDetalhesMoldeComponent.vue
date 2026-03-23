@@ -90,7 +90,7 @@
 
               <input type="file" :ref="el => inputsFile[slot] = el" @change="event => fazerUpload(event, slot)" accept="image/*" class="hidden">
 
-              <div class="w-full flex gap-2 mt-auto">
+              <div v-if="ehAdmin" class="w-full flex gap-2 mt-auto">
                 <button @click="inputsFile[slot].click()" :disabled="carregandoSlot === slot" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-semibold py-2 rounded transition-colors flex items-center justify-center active:scale-95">
                   <span v-if="carregandoSlot === slot" class="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-1"></span>
                   {{ moldeAtualizado[slot] ? 'Trocar' : 'Anexar' }}
@@ -217,6 +217,8 @@ const removerFoto = async (slotImagem) => {
     erroUpload.value = 'Falha ao remover a foto no servidor.'
     moldeAtualizado[slotImagem] = imagemAntiga 
   }
+  const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
+  const ehAdmin = perfilUsuario === 'Admin'
 }
 </script>
 
