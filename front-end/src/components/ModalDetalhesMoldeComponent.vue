@@ -111,11 +111,16 @@
 </template>
 
 <script setup>
+
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 
+const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
+const ehAdmin = perfilUsuario === 'Admin'
+
 const props = defineProps({ molde: Object })
 const emit = defineEmits(['fechar', 'fotoAtualizada'])
+
 
 const moldeAtualizado = reactive({ ...props.molde })
 const nomeEmpresa = ref('Carregando...')
@@ -217,8 +222,6 @@ const removerFoto = async (slotImagem) => {
     erroUpload.value = 'Falha ao remover a foto no servidor.'
     moldeAtualizado[slotImagem] = imagemAntiga 
   }
-  const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
-  const ehAdmin = perfilUsuario === 'Admin'
 }
 </script>
 
