@@ -210,7 +210,6 @@ const removerFoto = async (slotImagem) => {
 .animate-fade-in { animation: fadeIn 0.15s ease-out; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* Estilização da barra de rolagem moderna para não quebrar o layout */
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; border-radius: 8px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 8px; }
