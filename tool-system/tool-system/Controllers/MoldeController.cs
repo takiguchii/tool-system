@@ -25,7 +25,7 @@ public class MoldeController : ControllerBase
     {
         return Ok(await _context.Moldes.ToListAsync());
     }
-    
+
     [HttpGet("{id}/machos")]
     public async Task<IActionResult> ObterMachosDoMolde(int id)
     {
@@ -78,40 +78,55 @@ public class MoldeController : ControllerBase
         return Ok(moldeAtualizado);
     }
 
-    [HttpDelete("{id}")]
+[HttpDelete("{id}")]
     public async Task<IActionResult> DeletarMolde(int id)
     {
-        var molde = await _context.Moldes.FindAsync(id);
-        if (molde == null) return NotFound("Molde não encontrado.");
-
-        _context.Moldes.Remove(molde);
-        await _context.SaveChangesAsync();
-        
-        DeletarImagemSeNecessario(molde.Imagem1, null);
-        DeletarImagemSeNecessario(molde.Imagem2, null);
-        DeletarImagemSeNecessario(molde.Imagem3, null);
-
-        return Ok("Molde deletado com sucesso.");
-    }
-    
-    private void DeletarImagemSeNecessario(string? nomeImagemAntiga, string? nomeImagemNova)
-    {
-        if (string.IsNullOrEmpty(nomeImagemAntiga)) return;
-        if (nomeImagemAntiga == nomeImagemNova) return;
-
         try
         {
-            var pastaRaiz = _ambiente.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            var caminhoCompleto = Path.Combine(pastaRaiz, "imagens", "moldes", nomeImagemAntiga);
-            
-            if (System.IO.File.Exists(caminhoCompleto))
-            {
-                System.IO.File.Delete(caminhoCompleto);
-            }
+            var molde = await _context.Moldes.FindAsync(id);
+            if (molde == null) return NotFound("Molde não encontrado.");
+
+            var vinculos = await _context.Set<MoldeUsaMacho>().Where(v => v.MoldeId == id).ToListAsync();
+            if (vinculos.Any()) _context.Set<MoldeUsaMacho>().RemoveRange(vinculos);
+
+            var historicoEstados = await _context.Set<Estado>().Where(e => e.MoldeId == id).ToListAsync();
+            if (historicoEstados.Any()) _context.Set<Estado>().RemoveRange(historicoEstados);
+
+            await _context.SaveChangesAsync();
+
+            DeletarImagemSeNecessario(molde.Imagem1, null);
+            DeletarImagemSeNecessario(molde.Imagem2, null);
+            DeletarImagemSeNecessario(molde.Imagem3, null);
+
+            _context.Moldes.Remove(molde);
+            await _context.SaveChangesAsync();
+
+            return Ok("Molde deletado com sucesso.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Não foi possível apagar a imagem antiga '{nomeImagemAntiga}'. Erro: {ex.Message}");
+            var erroReal = ex.InnerException?.Message ?? ex.Message;
+            return StatusCode(500, $"Erro interno da API: {erroReal}");
+        }
+    }
+
+    private void DeletarImagemSeNecessario(string? imagemAntiga, string? imagemNova)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(imagemAntiga) && imagemAntiga != imagemNova)
+            {
+                var pastaRaiz = _ambiente.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var caminhoArquivo = Path.Combine(pastaRaiz, "imagens", "moldes", imagemAntiga);
+                
+                if (System.IO.File.Exists(caminhoArquivo))
+                {
+                    System.IO.File.Delete(caminhoArquivo);
+                }
+            }
+        }
+        catch
+        {
         }
     }
 }

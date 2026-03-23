@@ -20,6 +20,13 @@
           </div>
         </div>
 
+        <div>
+          <label class="block text-zinc-400 font-medium mb-1 text-sm">Status Atual</label>
+          <select v-model="novoMolde.status" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500" required>
+            <option v-for="est in statusOpcoes" :key="est" :value="est">{{ est }}</option>
+          </select>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-zinc-400 font-medium mb-1 text-sm">Empresa</label>
@@ -54,6 +61,8 @@ import axios from 'axios'
 
 const emit = defineEmits(['fechar', 'moldeCadastrado'])
 
+const statusOpcoes = ['Disponível', 'Em Uso', 'Em Manutenção', 'Inativo']
+
 const novoMolde = ref({
   nome: '', codigo: '', prateleira: '', status: 'Disponível',
   empresaId: '', categoriaId: ''
@@ -64,7 +73,6 @@ const categorias = ref([])
 const carregando = ref(false)
 const erro = ref('')
 
-// Carrega as listas de apoio assim que a prancheta é aberta
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token')
@@ -86,16 +94,13 @@ const salvarMolde = async () => {
   carregando.value = true
   erro.value = ''
   
-  // Limpa campos vazios para o C# não reclamar
   const payload = { ...novoMolde.value }
   if (!payload.empresaId) payload.empresaId = null
   if (!payload.categoriaId) payload.categoriaId = null
 
   try {
     const token = localStorage.getItem('token')
-    await axios.post('/api/Molde', payload, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    await axios.post('/api/Molde', payload, { headers: { Authorization: `Bearer ${token}` } })
     emit('moldeCadastrado')
   } catch (e) {
     erro.value = 'Erro ao salvar. Verifique se o código já existe.'

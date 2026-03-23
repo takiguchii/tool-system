@@ -54,6 +54,14 @@ public class MachoController : ControllerBase
         var macho = await _context.Machos.FindAsync(id);
         if (macho == null) return NotFound("Macho não encontrado.");
 
+        var vinculos = await _context.Set<MoldeUsaMacho>()
+                                     .Where(v => v.MachoId == id)
+                                     .ToListAsync();
+        if (vinculos.Any())
+        {
+            _context.Set<MoldeUsaMacho>().RemoveRange(vinculos);
+        }
+
         _context.Machos.Remove(macho);
         await _context.SaveChangesAsync();
 

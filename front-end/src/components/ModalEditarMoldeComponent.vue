@@ -20,6 +20,13 @@
           </div>
         </div>
 
+        <div>
+          <label class="block text-zinc-400 font-medium mb-1 text-sm">Status Atual</label>
+          <select v-model="moldeEditado.status" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500" required>
+            <option v-for="est in statusOpcoes" :key="est" :value="est">{{ est }}</option>
+          </select>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-zinc-400 font-medium mb-1 text-sm">Empresa</label>
@@ -55,7 +62,10 @@ import axios from 'axios'
 const props = defineProps({ molde: Object })
 const emit = defineEmits(['fechar', 'moldeEditado'])
 
-const moldeEditado = ref({ ...props.molde })
+const statusOpcoes = ['Disponível', 'Em Uso', 'Em Manutenção', 'Inativo']
+
+const moldeEditado = ref({ ...props.molde, status: props.molde.status || 'Disponível' })
+
 const empresas = ref([])
 const categorias = ref([])
 const carregando = ref(false)
@@ -84,9 +94,7 @@ const salvarEdicao = async () => {
   
   try {
     const token = localStorage.getItem('token')
-    await axios.put(`/api/Molde/${moldeEditado.value.id}`, moldeEditado.value, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    await axios.put(`/api/Molde/${moldeEditado.value.id}`, moldeEditado.value, { headers: { Authorization: `Bearer ${token}` } })
     emit('moldeEditado')
   } catch (e) {
     erro.value = 'Erro ao atualizar os dados.'
