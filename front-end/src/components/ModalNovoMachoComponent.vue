@@ -16,6 +16,16 @@
             <input type="text" v-model="novoMacho.codigo" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors" required placeholder="Ex: M-123">
           </div>
 
+          <div>
+            <label class="block text-zinc-400 font-medium mb-1 text-sm">Vincular ao Molde</label>
+            <select v-model="moldeIdSelecionado" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors appearance-none cursor-pointer" required>
+              <option value="" disabled>Selecione o Molde...</option>
+              <option v-for="molde in moldes" :key="molde.id" :value="molde.id">
+                {{ molde.codigo }} - {{ molde.nome }}
+              </option>
+            </select>
+          </div>
+
           <div class="border-t border-zinc-800 pt-4 mt-2">
             <label class="block text-zinc-400 font-medium mb-3 text-sm">Fotos Iniciais (Opcional)</label>
             <div class="grid grid-cols-3 gap-3">
@@ -54,24 +64,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { useRoute } from 'vue-router'
 
 const emit = defineEmits(['fechar', 'machoCadastrado'])
-const route = useRoute()
 
 const novoMacho = ref({
   codigo: '',
   imagem1: null, imagem2: null, imagem3: null
 })
 
+const moldes = ref([])
+const moldeIdSelecionado = ref('')
+
 const erro = ref('')
 const carregando = ref(false)
 
+// CONTROLES DE IMAGEM
 const arquivosSelecionados = ref({ imagem1: null, imagem2: null, imagem3: null })
 const previews = ref({ imagem1: null, imagem2: null, imagem3: null })
 const inputsFile = ref({})
+
+// Carrega os moldes disponíveis ao abrir a tela
+onMounted(async () => {
+  const token = localStorage.getItem('token')
+  try {
+    const resposta = await axios.get('/api/Molde', { headers: { Authorization: `Bearer ${token}` } })
+    moldes.value = resposta.data
+  } catch (e) {
+    erro.value = 'Falha ao carregar a lista de moldes.'
+  }
+})
 
 const selecionarFoto = (event, slot) => {
   const file = event.target.files[0]
@@ -81,6 +104,11 @@ const selecionarFoto = (event, slot) => {
 }
 
 const salvarMacho = async () => {
+  if (!moldeIdSelecionado.value) {
+    erro.value = 'Por favor, selecione um molde para vincular o macho.'
+    return
+  }
+
   erro.value = ''
   carregando.value = true
 
@@ -98,12 +126,11 @@ const salvarMacho = async () => {
       }
     }
 
-    const moldeId = route.params.id
-    await axios.post(`/api/Macho?moldeId=${moldeId}`, novoMacho.value, config)
+    await axios.post(`/api/Macho?moldeId=${moldeIdSelecionado.value}`, novoMacho.value, config)
     
     emit('machoCadastrado')
   } catch (e) {
-    erro.value = e.response?.data || 'Erro ao salvar o macho. Verifique se o código já existe.'
+    erro.value = e.response?.data || 'Erro ao salvar o macho. Verifique os dados.'
   } finally {
     carregando.value = false
   }
