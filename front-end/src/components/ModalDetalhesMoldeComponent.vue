@@ -81,28 +81,14 @@
               
               <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-2 w-full text-center border-b border-zinc-800 pb-1">Foto {{ index + 1 }}</p>
               
-              <img v-if="moldeAtualizado[slot]" :src="'/imagens/moldes/' + moldeAtualizado[slot]" class="w-full h-32 sm:h-40 object-cover rounded mb-3 border border-zinc-700 shadow-sm transition-transform duration-300 group-hover:scale-105">
+              <img v-if="molde[slot]" :src="'/imagens/moldes/' + molde[slot]" class="w-full h-32 sm:h-40 object-cover rounded border border-zinc-700 shadow-sm transition-transform duration-300 group-hover:scale-105">
               
-              <div v-else class="w-full h-32 sm:h-40 border border-dashed border-zinc-700 rounded mb-3 flex flex-col items-center justify-center bg-zinc-950 text-zinc-600">
+              <div v-else class="w-full h-32 sm:h-40 border border-dashed border-zinc-700 rounded flex flex-col items-center justify-center bg-zinc-950 text-zinc-600">
                 <span class="text-3xl mb-1">📸</span>
                 <p class="text-[10px] font-medium">Vazio</p>
               </div>
-
-              <input type="file" :ref="el => inputsFile[slot] = el" @change="event => fazerUpload(event, slot)" accept="image/*" class="hidden">
-
-              <div v-if="ehAdmin" class="w-full flex gap-2 mt-auto">
-                <button @click="inputsFile[slot].click()" :disabled="carregandoSlot === slot" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-semibold py-2 rounded transition-colors flex items-center justify-center active:scale-95">
-                  <span v-if="carregandoSlot === slot" class="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                  {{ moldeAtualizado[slot] ? 'Trocar' : 'Anexar' }}
-                </button>
-                
-                <button v-if="moldeAtualizado[slot]" @click="removerFoto(slot)" class="bg-red-950 hover:bg-red-900 text-red-300 px-2.5 rounded transition-colors text-sm active:scale-95" title="Remover">
-                  🗑️
-                </button>
-              </div>
             </div>
           </div>
-          <p v-if="erroUpload" class="text-red-500 text-xs text-center mt-4 p-2 bg-red-900/20 rounded border border-red-900/50">{{ erroUpload }}</p>
         </div>
 
       </div>
@@ -111,26 +97,16 @@
 </template>
 
 <script setup>
-
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
-const ehAdmin = perfilUsuario === 'Admin'
-
 const props = defineProps({ molde: Object })
-const emit = defineEmits(['fechar', 'fotoAtualizada'])
+const emit = defineEmits(['fechar'])
 
-
-const moldeAtualizado = reactive({ ...props.molde })
 const nomeEmpresa = ref('Carregando...')
 const nomeCategoria = ref('Carregando...')
 const machosVinculados = ref([])
 const buscandoMachos = ref(true)
-
-const carregandoSlot = ref('') 
-const erroUpload = ref('')
-const inputsFile = reactive({}) 
 
 const formatarData = (dataHora) => {
   if (!dataHora) return '--/--/----'
@@ -172,57 +148,6 @@ onMounted(async () => {
     buscandoMachos.value = false
   }
 })
-
-const fazerUpload = async (event, slotImagem) => {
-  const arquivoFisico = event.target.files[0]
-  if (!arquivoFisico) return
-
-  carregandoSlot.value = slotImagem
-  erroUpload.value = ''
-
-  try {
-    const token = localStorage.getItem('token')
-    const pacote = new FormData()
-    pacote.append('arquivo', arquivoFisico) 
-
-    const respostaUpload = await axios.post('/api/Upload/imagem/moldes', pacote, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-
-    moldeAtualizado[slotImagem] = respostaUpload.data.nomeImagem
-
-    await axios.put(`/api/Molde/${props.molde.id}`, moldeAtualizado, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    emit('fotoAtualizada') 
-  } catch (e) {
-    erroUpload.value = e.response?.data || 'Falha ao salvar a imagem na fábrica.'
-    moldeAtualizado[slotImagem] = props.macho[slotImagem]
-  } finally {
-    carregandoSlot.value = ''
-    event.target.value = '' 
-  }
-}
-
-const removerFoto = async (slotImagem) => {
-  if(!window.confirm(`Tem certeza que deseja apagar a foto ${slotImagem.replace('imagem', '')} deste molde?`)) return
-  
-  erroUpload.value = ''
-  const imagemAntiga = moldeAtualizado[slotImagem]
-  moldeAtualizado[slotImagem] = null 
-
-  try {
-    const token = localStorage.getItem('token')
-    await axios.put(`/api/Molde/${props.molde.id}`, moldeAtualizado, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    emit('fotoAtualizada')
-  } catch (e) {
-    erroUpload.value = 'Falha ao remover a foto no servidor.'
-    moldeAtualizado[slotImagem] = imagemAntiga 
-  }
-}
 </script>
 
 <style scoped>
