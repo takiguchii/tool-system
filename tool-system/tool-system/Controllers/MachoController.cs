@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using tool_system.Data;
 using ToolingSystem.API.Models;
+using ToolingSystem.API.Services;
 
 namespace ToolingSystem.API.Controllers;
 
@@ -11,60 +10,36 @@ namespace ToolingSystem.API.Controllers;
 [Route("api/[controller]")]
 public class MachoController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MachoService _service;
 
-    public MachoController(AppDbContext context)
+    public MachoController(MachoService service)
     {
-        _context = context;
+        _service = service;
     }
 
     [HttpGet]
-    public async Task<IActionResult> LerMachos()
-    {
-        return Ok(await _context.Machos.ToListAsync());
-    }
+    public async Task<IActionResult> LerMachos() => Ok(await _service.ObterTodosAsync());
 
     [HttpPost]
     public async Task<IActionResult> CriarMacho([FromQuery] int moldeId, [FromBody] Macho macho)
     {
-        _context.Machos.Add(macho);
-        await _context.SaveChangesAsync();
-
-        var vinculo = new MoldeUsaMacho { MoldeId = moldeId, MachoId = macho.Id };
-        _context.Add(vinculo);
-        await _context.SaveChangesAsync();
-
-        return Ok(macho);
+        var novoMacho = await _service.CriarVinculadoAsync(moldeId, macho);
+        return Ok(novoMacho);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> EditarMacho(int id, Macho machoAtualizado)
     {
-        if (id != machoAtualizado.Id) return BadRequest("Os IDs não combinam.");
-
-        _context.Entry(machoAtualizado).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-
-        return Ok(machoAtualizado);
+        var resultado = await _service.AtualizarAsync(id, machoAtualizado);
+        if (!resultado.Sucesso) return BadRequest(resultado.Mensagem);
+        return Ok(resultado.Dados);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletarMacho(int id)
     {
-        var macho = await _context.Machos.FindAsync(id);
-        if (macho == null) return NotFound("Macho não encontrado.");
-
-        var vinculos = await _context.Set<MoldeUsaMacho>()
-                                     .Where(v => v.MachoId == id)
-                                     .ToListAsync();
-        if (vinculos.Any())
-        {
-            _context.Set<MoldeUsaMacho>().RemoveRange(vinculos);
-        }
-
-        _context.Machos.Remove(macho);
-        await _context.SaveChangesAsync();
-
+        var resultado = await _service.DeletarAsync(id);
+        if (!resultado.Sucesso) return NotFound(resultado.Mensagem);
         return Ok("Macho deletado com sucesso.");
     }
 }
