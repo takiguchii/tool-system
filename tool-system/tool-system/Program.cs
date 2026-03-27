@@ -52,6 +52,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+builder.Services.AddScoped<ToolingSystem.API.Services.MoldeService>();
+builder.Services.AddScoped<ToolingSystem.API.Services.MachoService>();
+
 var app = builder.Build();
 var pastaImagens = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens");
 Directory.CreateDirectory(Path.Combine(pastaImagens, "moldes"));
