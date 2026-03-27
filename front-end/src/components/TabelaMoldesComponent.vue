@@ -160,7 +160,7 @@ const buscarDados = async () => {
       axios.get('/api/Molde', config),
       axios.get('/api/Empresa', config)
     ])
-    moldes.value = respMoldes.data
+    moldes.value = respMoldes.data.dados
     empresas.value = respEmpresas.data
   } catch (e) {
     erro.value = 'Falha ao buscar as informações completas.'
