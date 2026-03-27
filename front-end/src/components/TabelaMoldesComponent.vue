@@ -14,7 +14,8 @@
         <input 
           type="text" 
           v-model="termoPesquisa" 
-          placeholder="Pesquise por peça, código ou empresa..." 
+          @input="pesquisarBackend" 
+          placeholder="Pesquise por peça ou código..." 
           class="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors shadow-inner placeholder-zinc-600 text-sm sm:text-base"
         >
       </div>
@@ -28,9 +29,9 @@
       {{ erro }}
     </div>
 
-    <div v-else class="overflow-y-auto sm:rounded-lg sm:border sm:border-zinc-800 sm:shadow-lg flex-1 custom-scrollbar">
+    <div v-else class="overflow-y-auto sm:rounded-lg sm:border sm:border-zinc-800 sm:shadow-lg flex-1 custom-scrollbar flex flex-col">
       
-      <table class="w-full text-left border-collapse block md:table">
+      <table class="w-full text-left border-collapse block md:table flex-1">
         <thead class="hidden md:table-header-group sticky top-0 bg-zinc-900 z-10 shadow-md">
           <tr class="text-zinc-400 border-b border-zinc-800 text-sm uppercase tracking-wider">
             <th class="p-4 font-medium w-20">ID</th>
@@ -44,7 +45,7 @@
         
         <tbody class="block md:table-row-group divide-y divide-transparent md:divide-zinc-800">
           
-          <tr v-for="molde in moldesFiltrados" :key="molde.id" class="block md:table-row hover:bg-zinc-900/60 transition-colors duration-200 bg-zinc-900 md:bg-transparent rounded-xl mb-4 md:mb-0 border border-zinc-800 md:border-none p-4 md:p-0 shadow-sm md:shadow-none">
+          <tr v-for="molde in moldes" :key="molde.id" class="block md:table-row hover:bg-zinc-900/60 transition-colors duration-200 bg-zinc-900 md:bg-transparent rounded-xl mb-4 md:mb-0 border border-zinc-800 md:border-none p-4 md:p-0 shadow-sm md:shadow-none">
             
             <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
               <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">ID</span>
@@ -73,44 +74,56 @@
               </span>
             </td>
             
-            <td class="block md:table-cell py-4 md:p-4 mt-2 md:mt-0">
+            <td class="flex justify-between items-center md:table-cell py-2 md:py-4 md:p-4 border-b border-zinc-800/50 md:border-none">
+              <span class="md:hidden text-[10px] font-bold text-zinc-500 uppercase">Ações</span>
               <div class="flex justify-center items-center gap-4">
-                <button  @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-400 hover:text-orange-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
-                  Detalhes
-                </button>
-                <button v-if="ehAdmin" @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-400 hover:text-blue-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
-                  Editar
-                </button>
-                <button v-if="ehAdmin" @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-400 hover:text-red-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">
-                  Excluir
-                </button>
+                <button @click="abrirDetalhes(molde)" class="text-sm font-semibold text-zinc-400 hover:text-orange-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">Detalhes</button>
+                <button v-if="ehAdmin" @click="abrirEdicao(molde)" class="text-sm font-semibold text-zinc-400 hover:text-blue-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">Editar</button>
+                <button v-if="ehAdmin" @click="deletarMolde(molde.id)" class="text-sm font-semibold text-zinc-400 hover:text-red-500 transition-colors bg-zinc-950 md:bg-transparent px-3 py-1.5 md:px-0 md:py-0 rounded-lg border border-zinc-800 md:border-none">Excluir</button>
               </div>
             </td>
             
           </tr>
-
         </tbody>
       </table>
-      
-      <div v-if="moldes.length === 0" class="p-10 text-center text-zinc-500 font-medium">
-        Nenhum molde cadastrado no momento.
-      </div>
-      <div v-else-if="moldesFiltrados.length === 0" class="p-10 text-center text-zinc-500 font-medium">
-        Nenhum resultado para "<span class="text-orange-400">{{ termoPesquisa }}</span>".
+
+      <div v-if="totalPaginas > 1" class="flex items-center justify-between px-2 sm:px-6 py-3 sm:py-4 border-t border-zinc-800 bg-zinc-950/50 mt-auto shrink-0 gap-2">
+        
+        <button 
+          @click="mudarPagina(paginaAtual - 1)" 
+          :disabled="paginaAtual === 1" 
+          class="flex justify-center items-center px-3 sm:px-4 py-2 text-sm font-bold text-white bg-zinc-800 rounded-lg hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[44px]">
+          ← <span class="hidden sm:inline ml-1.5">Anterior</span>
+        </button>
+        
+        <span class="text-xs sm:text-sm text-zinc-400 font-medium text-center whitespace-nowrap">
+          <span class="hidden sm:inline">Página</span>
+          <span class="sm:hidden">Pág</span>
+          <span class="font-bold text-orange-500 ml-1">{{ paginaAtual }}</span> 
+          de 
+          <span class="font-bold text-white">{{ totalPaginas }}</span>
+        </span>
+        
+        <button 
+          @click="mudarPagina(paginaAtual + 1)" 
+          :disabled="paginaAtual === totalPaginas" 
+          class="flex justify-center items-center px-3 sm:px-4 py-2 text-sm font-bold text-white bg-zinc-800 rounded-lg hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[44px]">
+          <span class="hidden sm:inline mr-1.5">Próximo</span> →
+        </button>
+        
       </div>
     </div>
 
-    <ModalNovoMoldeComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @moldeCadastrado="aoAtualizar" />
-    <ModalEditarMoldeComponent v-if="mostrarModalEditar" :molde="moldeSelecionado" @fechar="mostrarModalEditar = false" @moldeEditado="aoAtualizar" />
-    <ModalDetalhesMoldeComponent v-if="mostrarModalDetalhes" :molde="moldeSelecionado" @fechar="mostrarModalDetalhes = false" @fotoAtualizada="buscarDados" />
+    <ModalNovoMoldeComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @moldeCadastrado="buscarEUnificarDados" />
+    <ModalEditarMoldeComponent v-if="mostrarModalEditar" :molde="moldeSelecionado" @fechar="mostrarModalEditar = false" @moldeEditado="buscarEUnificarDados" />
+    <ModalDetalhesMoldeComponent v-if="mostrarModalDetalhes" :molde="moldeSelecionado" @fechar="mostrarModalDetalhes = false" @fotoAtualizada="buscarEUnificarDados" />
 
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
-
 import ModalNovoMoldeComponent from './ModalNovoMoldeComponent.vue'
 import ModalEditarMoldeComponent from './ModalEditarMoldeComponent.vue'
 import ModalDetalhesMoldeComponent from './ModalDetalhesMoldeComponent.vue'
@@ -119,7 +132,19 @@ const moldes = ref([])
 const empresas = ref([]) 
 const carregando = ref(true)
 const erro = ref('')
+
 const termoPesquisa = ref('')
+const paginaAtual = ref(1)
+const totalPaginas = ref(1)
+let timerPesquisa = null 
+
+const mostrarModalNovo = ref(false)
+const mostrarModalEditar = ref(false)
+const mostrarModalDetalhes = ref(false)
+const moldeSelecionado = ref(null)
+
+const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
+const ehAdmin = perfilUsuario === 'Admin'
 
 const getNomeEmpresa = (id) => {
   if (!id) return '-'
@@ -127,46 +152,56 @@ const getNomeEmpresa = (id) => {
   return emp ? emp.nome : 'Desconhecida'
 }
 
-const moldesFiltrados = computed(() => {
-  if (!termoPesquisa.value) return moldes.value
-  const termo = termoPesquisa.value.toLowerCase()
-  return moldes.value.filter(molde => {
-    const nomeMolde = molde.nome ? molde.nome.toLowerCase() : ''
-    const codigoMolde = molde.codigo ? molde.codigo.toLowerCase() : ''
-    let nomeEmpresa = ''
-    let cidadeEmpresa = ''
-    
-    if (molde.empresaId) {
-      const empresaVinculada = empresas.value.find(e => e.id === molde.empresaId)
-      if (empresaVinculada) {
-        nomeEmpresa = empresaVinculada.nome ? empresaVinculada.nome.toLowerCase() : ''
-        cidadeEmpresa = empresaVinculada.cidade ? empresaVinculada.cidade.toLowerCase() : ''
-      }
-    }
-    return nomeMolde.includes(termo) || codigoMolde.includes(termo) || nomeEmpresa.includes(termo) || cidadeEmpresa.includes(termo)
-  })
-})
-
-const mostrarModalNovo = ref(false)
-const mostrarModalEditar = ref(false)
-const mostrarModalDetalhes = ref(false)
-const moldeSelecionado = ref(null)
-
-const buscarDados = async () => {
+const buscarEUnificarDados = async () => {
+  carregando.value = true
+  erro.value = ''
+  
   try {
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
+    
+    const parametros = { 
+      pagina: paginaAtual.value,
+      tamanhoPagina: 10
+    }
+    
+    if (termoPesquisa.value.trim() !== '') {
+      parametros.termoBusca = termoPesquisa.value
+    }
+
     const [respMoldes, respEmpresas] = await Promise.all([
-      axios.get('/api/Molde', config),
+      axios.get('/api/Molde', { ...config, params: parametros }),
       axios.get('/api/Empresa', config)
     ])
+    
     moldes.value = respMoldes.data.dados
+    paginaAtual.value = respMoldes.data.paginaAtual
+    totalPaginas.value = respMoldes.data.totalPaginas
     empresas.value = respEmpresas.data
+
+    mostrarModalNovo.value = false
+    mostrarModalEditar.value = false
+    
   } catch (e) {
-    erro.value = 'Falha ao buscar as informações completas.'
+    erro.value = 'Falha ao buscar as informações do servidor.'
   } finally {
     carregando.value = false
   }
+}
+
+const mudarPagina = (novaPagina) => {
+  if (novaPagina >= 1 && novaPagina <= totalPaginas.value) {
+    paginaAtual.value = novaPagina
+    buscarEUnificarDados() 
+  }
+}
+
+const pesquisarBackend = () => {
+  clearTimeout(timerPesquisa)
+  timerPesquisa = setTimeout(() => {
+    paginaAtual.value = 1 
+    buscarEUnificarDados()
+  }, 500)
 }
 
 const deletarMolde = async (id) => {
@@ -174,17 +209,10 @@ const deletarMolde = async (id) => {
   try {
     const token = localStorage.getItem('token')
     await axios.delete(`/api/Molde/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-    buscarDados() 
+    buscarEUnificarDados() 
   } catch (e) {
     alert("Erro ao excluir. O banco de dados pode estar protegendo o histórico deste molde.")
   }
-}
-
-const aoAtualizar = () => {
-  mostrarModalNovo.value = false
-  mostrarModalEditar.value = false
-  carregando.value = true
-  buscarDados()
 }
 
 const abrirEdicao = (molde) => {
@@ -197,11 +225,8 @@ const abrirDetalhes = (molde) => {
   mostrarModalDetalhes.value = true
 }
 
-const perfilUsuario = localStorage.getItem('perfil') || 'Consultor'
-const ehAdmin = perfilUsuario === 'Admin'
-
 onMounted(() => {
-  buscarDados()
+  buscarEUnificarDados()
 })
 </script>
 

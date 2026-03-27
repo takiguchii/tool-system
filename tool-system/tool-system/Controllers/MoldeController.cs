@@ -25,7 +25,7 @@ public class MoldeController : ControllerBase
     public async Task<IActionResult> LerMoldes([FromQuery] FiltroMoldeDto filtro)
     {
         if (filtro.Pagina < 1) filtro.Pagina = 1;
-        if (filtro.TamanhoPagina > 50) filtro.TamanhoPagina = 10;
+        if (filtro.TamanhoPagina > 50) filtro.TamanhoPagina = 8;
 
         var resultado = await _service.ObterTodosPaginadoAsync(filtro);
         return Ok(resultado);
