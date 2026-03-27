@@ -54,6 +54,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ToolingSystem.API.Services.MoldeService>();
 builder.Services.AddScoped<ToolingSystem.API.Services.MachoService>();
+builder.Services.AddScoped<ToolingSystem.API.Services.AuthService>();
 
 var app = builder.Build();
 var pastaImagens = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens");

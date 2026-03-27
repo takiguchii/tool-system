@@ -1,7 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using tool_system.Data;
-using ToolingSystem.API.Models;
 using ToolingSystem.API.Services;
 
 namespace ToolingSystem.API.Controllers;
@@ -10,61 +7,29 @@ namespace ToolingSystem.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
+    private readonly AuthService _service;
 
-    public AuthController(AppDbContext context, IConfiguration configuration)
+    public AuthController(AuthService service)
     {
-        _context = context;
-        _configuration = configuration;
+        _service = service;
     }
 
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar(UsuarioLoginDto requisicao)
     {
-        var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.Username == requisicao.Username);
-        if (usuarioExiste) return BadRequest("Este usuário já existe.");
-
-        var usuario = new Usuario
-        {
-            Username = requisicao.Username,
-            SenhaHash = BCrypt.Net.BCrypt.HashPassword(requisicao.Senha),
-            Regra = requisicao.Regra 
-        };
-
-        _context.Usuarios.Add(usuario);
-        await _context.SaveChangesAsync();
-
-        return Ok("Usuário criado com sucesso!");
+        var resultado = await _service.RegistrarAsync(requisicao);
+        if (!resultado.Sucesso) return BadRequest(resultado.Mensagem);
+        
+        return Ok(resultado.Mensagem);
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(UsuarioLoginDto requisicao)
     {
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Username == requisicao.Username);
-        if (usuario == null) return BadRequest("Usuário não encontrado.");
+        var resultado = await _service.LoginAsync(requisicao);
+        if (!resultado.Sucesso) return BadRequest(resultado.Mensagem);
 
-        // Blindagem: Tenta verificar a criptografia. Se for uma senha injetada manual (pura), faz a verificação simples.
-        bool senhaCorreta = false;
-        try 
-        {
-            senhaCorreta = BCrypt.Net.BCrypt.Verify(requisicao.Senha, usuario.SenhaHash);
-        } 
-        catch 
-        {
-            senhaCorreta = (requisicao.Senha == usuario.SenhaHash);
-        }
-
-        if (!senhaCorreta) return BadRequest("Senha incorreta.");
-
-        var chaveSecreta = _configuration.GetValue<string>("Jwt:Chave");
-        var token = TokenService.GerarToken(usuario, chaveSecreta!);
-
-        return Ok(new 
-        { 
-            token = token,
-            perfil = usuario.Perfil ?? "Admin" 
-        });
+        return Ok(resultado.Dados);
     }
 
     public class UsuarioLoginDto
