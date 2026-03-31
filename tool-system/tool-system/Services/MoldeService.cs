@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using tool_system.Data;
 using ToolingSystem.API.Models;
+using ToolingSystem.API.Dtos;
 
 namespace ToolingSystem.API.Services;
 
@@ -15,7 +16,33 @@ public class MoldeService
         _ambiente = ambiente;
     }
 
-    public async Task<List<Molde>> ObterTodosAsync() => await _context.Moldes.ToListAsync();
+    public async Task<ResultadoPaginado<Molde>> ObterTodosPaginadoAsync(FiltroMoldeDto filtro)
+    {
+        var query = _context.Moldes.AsQueryable();
+
+        if (!string.IsNullOrEmpty(filtro.TermoBusca))
+        {
+            query = query.Where(m => 
+                m.Nome.Contains(filtro.TermoBusca) || 
+                m.Codigo.Contains(filtro.TermoBusca));
+        }
+
+        var total = await query.CountAsync();
+        var totalPaginas = (int)Math.Ceiling(total / (double)filtro.TamanhoPagina);
+
+        var dados = await query
+            .Skip((filtro.Pagina - 1) * filtro.TamanhoPagina)
+            .Take(filtro.TamanhoPagina)
+            .ToListAsync();
+
+        return new ResultadoPaginado<Molde>
+        {
+            Dados = dados,
+            TotalItens = total,
+            PaginaAtual = filtro.Pagina,
+            TotalPaginas = totalPaginas
+        };
+    }
 
     public async Task<List<Macho>> ObterMachosDoMoldeAsync(int id)
     {

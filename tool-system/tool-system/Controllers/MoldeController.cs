@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolingSystem.API.Models;
 using ToolingSystem.API.Services;
+using ToolingSystem.API.Dtos;
 
 namespace ToolingSystem.API.Controllers;
 
@@ -17,11 +18,18 @@ public class MoldeController : ControllerBase
         _service = service;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> LerMoldes() => Ok(await _service.ObterTodosAsync());
-
     [HttpGet("{id}/machos")]
     public async Task<IActionResult> ObterMachosDoMolde(int id) => Ok(await _service.ObterMachosDoMoldeAsync(id));
+
+    [HttpGet]
+    public async Task<IActionResult> LerMoldes([FromQuery] FiltroMoldeDto filtro)
+    {
+        if (filtro.Pagina < 1) filtro.Pagina = 1;
+        if (filtro.TamanhoPagina > 50) filtro.TamanhoPagina = 8;
+
+        var resultado = await _service.ObterTodosPaginadoAsync(filtro);
+        return Ok(resultado);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CriarMolde(Molde molde)
