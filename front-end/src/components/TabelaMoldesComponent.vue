@@ -114,12 +114,29 @@
       </div>
     </div>
 
-    <ModalNovoMoldeComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @moldeCadastrado="buscarEUnificarDados" />
-    <ModalEditarMoldeComponent v-if="mostrarModalEditar" :molde="moldeSelecionado" @fechar="mostrarModalEditar = false" @moldeEditado="buscarEUnificarDados" />
-    <ModalDetalhesMoldeComponent v-if="mostrarModalDetalhes" :molde="moldeSelecionado" @fechar="mostrarModalDetalhes = false" @fotoAtualizada="buscarEUnificarDados" />
-
+    <ModalNovoMoldeComponent 
+      v-if="mostrarModalNovo" 
+      @fechar="mostrarModalNovo = false" 
+      @moldeCadastrado="buscarEUnificarDados" 
+    />
+    
+    <ModalEditarMoldeComponent 
+      v-if="mostrarModalEditar" 
+      :molde="moldeSelecionado" 
+      @fechar="mostrarModalEditar = false" 
+      @moldeEditado="buscarEUnificarDados" 
+    />
+    
+    <ModalDetalhesMoldeComponent 
+      v-if="mostrarModalDetalhes" 
+      :molde="moldeSelecionado" 
+      @fechar="mostrarModalDetalhes = false" 
+      @fotoAtualizada="buscarEUnificarDados" 
+    />
   </div>
+  
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue'
