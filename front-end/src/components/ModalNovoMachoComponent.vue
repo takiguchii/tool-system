@@ -9,21 +9,56 @@
       </div>
 
       <div class="p-5 sm:p-6 overflow-y-auto flex-1 custom-scrollbar">
-        <form @submit.prevent="salvarMacho" class="flex flex-col gap-5">
+        <form @submit.prevent="salvarMacho" class="flex flex-col gap-5 relative">
           
           <div>
             <label class="block text-zinc-400 font-medium mb-1 text-sm">Código do Macho (ID na Fábrica)</label>
             <input type="text" v-model="novoMacho.codigo" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors" required placeholder="Ex: M-123">
           </div>
 
-          <div>
+          <div class="relative z-40">
             <label class="block text-zinc-400 font-medium mb-1 text-sm">Vincular ao Molde</label>
-            <select v-model="moldeIdSelecionado" class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors appearance-none cursor-pointer" required>
-              <option value="" disabled>Selecione o Molde...</option>
-              <option v-for="molde in moldes" :key="molde.id" :value="molde.id">
-                {{ molde.codigo }} - {{ molde.nome }}
-              </option>
-            </select>
+            
+            <div class="relative">
+              <input 
+                type="text" 
+                v-model="termoBuscaMolde"
+                @focus="dropdownAberto = true"
+                placeholder="Pesquise por código ou nome..."
+                class="w-full bg-zinc-950 text-white border border-zinc-800 rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors placeholder-zinc-600"
+              >
+              
+              <button v-if="moldeIdSelecionado" @click.prevent="limparSelecaoMolde" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-red-500 p-1">
+                ✕
+              </button>
+              <span v-else class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">▼</span>
+            </div>
+
+            <div v-if="dropdownAberto" @click="dropdownAberto = false" class="fixed inset-0 z-30"></div>
+
+            <div v-if="dropdownAberto" class="absolute z-50 w-full mt-1 bg-zinc-950 border border-zinc-700 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
+              
+              <div v-if="carregandoMoldes" class="p-3 text-orange-500 text-sm text-center animate-pulse">
+                Carregando a prateleira...
+              </div>
+              
+              <div v-else-if="moldesFiltrados.length === 0" class="p-3 text-zinc-500 text-sm text-center">
+                Nenhum molde encontrado para "{{ termoBuscaMolde }}".
+              </div>
+              
+              <ul v-else class="py-1">
+                <li 
+                  v-for="molde in moldesFiltrados" 
+                  :key="molde.id"
+                  @click="selecionarMolde(molde)"
+                  class="px-4 py-2.5 hover:bg-orange-500/20 hover:text-orange-400 cursor-pointer text-sm border-b border-zinc-800/50 last:border-0 transition-colors flex flex-col"
+                  :class="moldeIdSelecionado === molde.id ? 'bg-orange-500/10 text-orange-500 font-bold' : 'text-zinc-300'"
+                >
+                  <span class="font-bold">{{ molde.nome || 'Sem Nome' }}</span>
+                  <span class="font-mono text-zinc-500 text-[10px]">{{ molde.codigo }}</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="border-t border-zinc-800 pt-4 mt-2">
@@ -47,12 +82,12 @@
 
           <p v-if="erro" class="text-red-500 text-sm mt-2 font-medium">{{ erro }}</p>
 
-          <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-800">
+          <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-800 z-10">
             <button type="button" @click="$emit('fechar')" class="px-5 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium transition-colors active:scale-95">
               Cancelar
             </button>
-            <button type="submit" :disabled="carregando" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold px-6 py-2.5 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[140px]">
-              <span v-if="carregando" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+            <button type="submit" :disabled="carregandoSubmit" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold px-6 py-2.5 rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[140px]">
+              <span v-if="carregandoSubmit" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
               <span v-else>Salvar Macho</span>
             </button>
           </div>
@@ -64,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 const emit = defineEmits(['fechar', 'machoCadastrado'])
@@ -74,27 +109,55 @@ const novoMacho = ref({
   imagem1: null, imagem2: null, imagem3: null
 })
 
+const erro = ref('')
+const carregandoSubmit = ref(false)
+
 const moldes = ref([])
 const moldeIdSelecionado = ref('')
+const termoBuscaMolde = ref('')
+const dropdownAberto = ref(false)
+const carregandoMoldes = ref(true)
 
-const erro = ref('')
-const carregando = ref(false)
+const moldesFiltrados = computed(() => {
+  if (moldeIdSelecionado.value || !termoBuscaMolde.value) return moldes.value
+  
+  const termo = termoBuscaMolde.value.toLowerCase()
+  return moldes.value.filter(molde => {
+    const nome = molde.nome ? molde.nome.toLowerCase() : ''
+    const codigo = molde.codigo ? molde.codigo.toLowerCase() : ''
+    return nome.includes(termo) || codigo.includes(termo)
+  })
+})
 
-// CONTROLES DE IMAGEM
-const arquivosSelecionados = ref({ imagem1: null, imagem2: null, imagem3: null })
-const previews = ref({ imagem1: null, imagem2: null, imagem3: null })
-const inputsFile = ref({})
+const selecionarMolde = (molde) => {
+  moldeIdSelecionado.value = molde.id
+  termoBuscaMolde.value = `${molde.codigo} - ${molde.nome}`
+  dropdownAberto.value = false
+}
 
-// Carrega os moldes disponíveis ao abrir a tela
+const limparSelecaoMolde = () => {
+  moldeIdSelecionado.value = ''
+  termoBuscaMolde.value = ''
+  dropdownAberto.value = true 
+}
+
 onMounted(async () => {
   const token = localStorage.getItem('token')
   try {
-    const resposta = await axios.get('/api/Molde', { headers: { Authorization: `Bearer ${token}` } })
-    moldes.value = resposta.data
+    const resposta = await axios.get('/api/Molde?tamanhoPagina=1000', { 
+        headers: { Authorization: `Bearer ${token}` } 
+    })
+    moldes.value = resposta.data.dados || []
   } catch (e) {
     erro.value = 'Falha ao carregar a lista de moldes.'
+  } finally {
+    carregandoMoldes.value = false
   }
 })
+
+const arquivosSelecionados = ref({ imagem1: null, imagem2: null, imagem3: null })
+const previews = ref({ imagem1: null, imagem2: null, imagem3: null })
+const inputsFile = ref({})
 
 const selecionarFoto = (event, slot) => {
   const file = event.target.files[0]
@@ -110,7 +173,7 @@ const salvarMacho = async () => {
   }
 
   erro.value = ''
-  carregando.value = true
+  carregandoSubmit.value = true
 
   const token = localStorage.getItem('token')
   const config = { headers: { Authorization: `Bearer ${token}` } }
@@ -132,7 +195,7 @@ const salvarMacho = async () => {
   } catch (e) {
     erro.value = e.response?.data || 'Erro ao salvar o macho. Verifique os dados.'
   } finally {
-    carregando.value = false
+    carregandoSubmit.value = false
   }
 }
 </script>
