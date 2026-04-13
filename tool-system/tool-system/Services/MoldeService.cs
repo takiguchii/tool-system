@@ -24,7 +24,8 @@ public class MoldeService
         {
             query = query.Where(m => 
                 m.Nome.Contains(filtro.TermoBusca) || 
-                m.Codigo.Contains(filtro.TermoBusca));
+                m.Codigo.Contains(filtro.TermoBusca) ||
+                _context.Empresas.Any(e => e.Id == m.EmpresaId && e.Nome.Contains(filtro.TermoBusca)));
         }
 
         var total = await query.CountAsync();

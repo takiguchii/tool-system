@@ -29,6 +29,12 @@
       {{ erro }}
     </div>
 
+    <div v-else-if="moldes.length === 0" class="flex-1 flex flex-col justify-center items-center p-8 border border-dashed border-zinc-800 rounded-lg bg-zinc-900/30 text-center">
+      <span class="text-4xl mb-4">😕</span>
+      <h3 class="text-xl font-bold text-orange-500 mb-2">Nenhum molde encontrado!</h3>
+      <p class="text-zinc-500 text-sm">Tente pesquisar por outro código, nome da peça ou empresa.</p>
+    </div>
+
     <div v-else class="overflow-y-auto sm:rounded-lg sm:border sm:border-zinc-800 sm:shadow-lg flex-1 custom-scrollbar flex flex-col">
       
       <table class="w-full text-left border-collapse block md:table flex-1">
