@@ -80,8 +80,12 @@
       </div>
     </div>
 
-    <ModalNovaEmpresaComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @empresaCadastrada="aoAtualizar" />
-    <ModalEditarEmpresaComponent v-if="mostrarModalEditar" :empresa="empresaSelecionada" @fechar="mostrarModalEditar = false" @empresaEditada="aoAtualizar" />
+    <transition name="modal">
+      <ModalNovaEmpresaComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @empresaCadastrada="aoAtualizar" />
+    </transition>
+    <transition name="modal">
+      <ModalEditarEmpresaComponent v-if="mostrarModalEditar" :empresa="empresaSelecionada" @fechar="mostrarModalEditar = false" @empresaEditada="aoAtualizar" />
+    </transition>
 
   </div>
 </template>

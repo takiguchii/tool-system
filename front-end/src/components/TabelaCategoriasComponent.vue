@@ -74,8 +74,12 @@
       </div>
     </div>
 
-    <ModalNovaCategoriaComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @categoriaCadastrada="aoAtualizar" />
-    <ModalEditarCategoriaComponent v-if="mostrarModalEditar" :categoria="categoriaSelecionada" @fechar="mostrarModalEditar = false" @categoriaEditada="aoAtualizar" />
+    <transition name="modal">
+      <ModalNovaCategoriaComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @categoriaCadastrada="aoAtualizar" />
+    </transition>
+    <transition name="modal">
+      <ModalEditarCategoriaComponent v-if="mostrarModalEditar" :categoria="categoriaSelecionada" @fechar="mostrarModalEditar = false" @categoriaEditada="aoAtualizar" />
+    </transition>
 
   </div>
 </template>

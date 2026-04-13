@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in p-4">
+  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
     <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-8 w-full max-w-md shadow-2xl relative">
       <h2 class="text-2xl font-bold text-white mb-6">Cadastrar Categoria</h2>
       

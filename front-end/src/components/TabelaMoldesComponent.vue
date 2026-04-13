@@ -120,25 +120,31 @@
       </div>
     </div>
 
-    <ModalNovoMoldeComponent 
-      v-if="mostrarModalNovo" 
-      @fechar="mostrarModalNovo = false" 
-      @moldeCadastrado="buscarEUnificarDados" 
-    />
+    <transition name="modal">
+      <ModalNovoMoldeComponent 
+        v-if="mostrarModalNovo" 
+        @fechar="mostrarModalNovo = false" 
+        @moldeCadastrado="buscarEUnificarDados" 
+      />
+    </transition>
     
-    <ModalEditarMoldeComponent 
-      v-if="mostrarModalEditar" 
-      :molde="moldeSelecionado" 
-      @fechar="mostrarModalEditar = false" 
-      @moldeEditado="buscarEUnificarDados" 
-    />
+    <transition name="modal">
+      <ModalEditarMoldeComponent 
+        v-if="mostrarModalEditar" 
+        :molde="moldeSelecionado" 
+        @fechar="mostrarModalEditar = false" 
+        @moldeEditado="buscarEUnificarDados" 
+      />
+    </transition>
     
-    <ModalDetalhesMoldeComponent 
-      v-if="mostrarModalDetalhes" 
-      :molde="moldeSelecionado" 
-      @fechar="mostrarModalDetalhes = false" 
-      @fotoAtualizada="buscarEUnificarDados" 
-    />
+    <transition name="modal">
+      <ModalDetalhesMoldeComponent 
+        v-if="mostrarModalDetalhes" 
+        :molde="moldeSelecionado" 
+        @fechar="mostrarModalDetalhes = false" 
+        @fotoAtualizada="buscarEUnificarDados" 
+      />
+    </transition>
   </div>
   
 </template>

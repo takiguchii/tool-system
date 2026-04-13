@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in p-4 sm:p-6">
+  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 sm:p-6">
     <div class="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-5xl shadow-2xl relative flex flex-col max-h-[95vh] overflow-hidden">
       
       <div class="p-5 sm:p-6 border-b border-zinc-800 flex justify-between items-start shrink-0 bg-zinc-900 z-10">

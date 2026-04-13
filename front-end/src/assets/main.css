@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+@layer base {
+  button, a {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  button:active, a:active {
+    @apply scale-95;
+  }
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}

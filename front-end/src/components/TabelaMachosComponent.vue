@@ -77,9 +77,15 @@
       </div>
     </div>
 
-    <ModalNovoMachoComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @machoCadastrado="aoAtualizarListagem" />
-    <ModalEditarMachoComponent v-if="mostrarModalEditar" :macho="machoSelecionado" @fechar="mostrarModalEditar = false" @machoEditado="aoAtualizarListagem" />
-    <ModalDetalhesMachoComponent v-if="mostrarModalDetalhes" :macho="machoSelecionadoParaDetalhes" @fechar="mostrarModalDetalhes = false" @fotosAtualizadas="buscarMachos" />
+    <transition name="modal">
+      <ModalNovoMachoComponent v-if="mostrarModalNovo" @fechar="mostrarModalNovo = false" @machoCadastrado="aoAtualizarListagem" />
+    </transition>
+    <transition name="modal">
+      <ModalEditarMachoComponent v-if="mostrarModalEditar" :macho="machoSelecionado" @fechar="mostrarModalEditar = false" @machoEditado="aoAtualizarListagem" />
+    </transition>
+    <transition name="modal">
+      <ModalDetalhesMachoComponent v-if="mostrarModalDetalhes" :macho="machoSelecionadoParaDetalhes" @fechar="mostrarModalDetalhes = false" @fotosAtualizadas="buscarMachos" />
+    </transition>
 
   </div>
 </template>
