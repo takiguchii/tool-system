@@ -60,7 +60,7 @@ const fazerLogin = async () => {
     router.push('/dashboard')
 
   } catch (e) {
-    erro.value = 'usarname ou senha incorretos.'
+    erro.value = 'Usuário ou senha incorretos.'
   } finally {
     carregando.value = false
   }

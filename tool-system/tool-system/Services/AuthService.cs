@@ -18,14 +18,18 @@ public class AuthService
 
     public async Task<(bool Sucesso, string Mensagem)> RegistrarAsync(UsuarioLoginDto requisicao)
     {
-        var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.Username == requisicao.Username);
+        var username = requisicao.Username.Trim();
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(requisicao.Senha))
+            return (false, "Usuário e senha são obrigatórios.");
+
+        var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.Username == username);
         if (usuarioExiste) return (false, "Este usuário já existe.");
 
         var usuario = new Usuario
         {
-            Username = requisicao.Username,
+            Username = username,
             SenhaHash = BCrypt.Net.BCrypt.HashPassword(requisicao.Senha),
-            Regra = requisicao.Regra,
+            Regra = "Encarregado",
             Perfil = "Consultor" 
         };
 
@@ -37,20 +41,24 @@ public class AuthService
 
     public async Task<(bool Sucesso, string Mensagem, object? Dados)> LoginAsync(UsuarioLoginDto requisicao)
     {
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Username == requisicao.Username);
-        if (usuario == null) return (false, "Usuário não encontrado.", null);
+        var username = requisicao.Username.Trim();
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(requisicao.Senha))
+            return (false, "Usuário ou senha incorretos.", null);
 
-        bool senhaCorreta = false;
-        try 
+        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Username == username);
+        if (usuario == null) return (false, "Usuário ou senha incorretos.", null);
+
+        bool senhaCorreta;
+        try
         {
             senhaCorreta = BCrypt.Net.BCrypt.Verify(requisicao.Senha, usuario.SenhaHash);
-        } 
-        catch 
+        }
+        catch
         {
-            senhaCorreta = (requisicao.Senha == usuario.SenhaHash);
+            senhaCorreta = false;
         }
 
-        if (!senhaCorreta) return (false, "Senha incorreta.", null);
+        if (!senhaCorreta) return (false, "Usuário ou senha incorretos.", null);
 
         var chaveSecreta = _configuration.GetValue<string>("Jwt:Chave");
         var token = TokenService.GerarToken(usuario, chaveSecreta!);

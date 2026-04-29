@@ -34,7 +34,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var chaveSecreta = builder.Configuration.GetValue<string>("Jwt:Chave");
-var chaveEmBytes = Encoding.ASCII.GetBytes(chaveSecreta!);
+if (string.IsNullOrWhiteSpace(chaveSecreta) || chaveSecreta.Length < 32)
+{
+    throw new InvalidOperationException("A chave JWT deve ser configurada e possuir pelo menos 32 caracteres.");
+}
+
+var chaveEmBytes = Encoding.ASCII.GetBytes(chaveSecreta);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -44,9 +49,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(chaveEmBytes),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            RequireExpirationTime = true,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(2)
         };
     });
+
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? ["http://localhost:5173", "http://127.0.0.1:5173"];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -61,10 +83,7 @@ var pastaImagens = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ima
 Directory.CreateDirectory(Path.Combine(pastaImagens, "moldes"));
 Directory.CreateDirectory(Path.Combine(pastaImagens, "machos"));
 
-app.UseCors(options => options
-    .AllowAnyOrigin()
-    .AllowAnyHeader()
-    .AllowAnyMethod());
+app.UseCors("FrontendPolicy");
 
 if (app.Environment.IsDevelopment())
 {

@@ -8,6 +8,16 @@ namespace ToolingSystem.API.Controllers;
 [Route("api/[controller]")]
 public class UploadController : ControllerBase
 {
+    private const long TamanhoMaximoArquivo = 5 * 1024 * 1024;
+
+    private static readonly Dictionary<string, string> ExtensoesPermitidas = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".jpg"] = "image/jpeg",
+        [".jpeg"] = "image/jpeg",
+        [".png"] = "image/png",
+        [".webp"] = "image/webp"
+    };
+
     private readonly IWebHostEnvironment _ambiente;
 
     public UploadController(IWebHostEnvironment ambiente)
@@ -26,7 +36,16 @@ public class UploadController : ControllerBase
             if (tipo != "moldes" && tipo != "machos")
                 return BadRequest("O tipo deve ser 'moldes' ou 'machos'.");
 
-            var extensao = Path.GetExtension(arquivo.FileName);
+            if (arquivo.Length > TamanhoMaximoArquivo)
+                return BadRequest("A imagem deve ter no máximo 5 MB.");
+
+            var extensao = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
+            if (!ExtensoesPermitidas.TryGetValue(extensao, out var contentTypeEsperado) ||
+                !string.Equals(arquivo.ContentType, contentTypeEsperado, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("Apenas imagens JPG, PNG ou WEBP são permitidas.");
+            }
+
             var nomeUnico = Guid.NewGuid().ToString() + extensao;
 
             var pastaRaiz = _ambiente.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -50,9 +69,9 @@ public class UploadController : ControllerBase
         {
             return StatusCode(500, "Erro Crítico: O Docker (Linux) bloqueou a permissão de escrita na pasta de imagens.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, $"Erro na API: {ex.Message}");
+            return StatusCode(500, "Erro interno ao salvar a imagem.");
         }
     }
 }

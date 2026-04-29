@@ -56,9 +56,9 @@ public class MoldeController : ControllerBase
             if (!resultado.Sucesso) return NotFound(resultado.Mensagem);
             return Ok("Molde deletado com sucesso.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, $"Erro interno da API: {ex.InnerException?.Message ?? ex.Message}");
+            return StatusCode(500, "Erro interno ao deletar o molde.");
         }
     }
 }
